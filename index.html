@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>RDF Graph Visualization from TTL</title>
+    <!-- 1. Include ECharts library -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <!-- 2. Include N3.js (RDF Parser library) -->
+    <script src="https://unpkg.com/n3/browser/n3.min.js"></script>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+        #main { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <!-- 3. Div for the ECharts graph -->
+    <div id="main"></div>
+
+    <!-- 4. Include your graph visualization script -->
+    <script src="graph-4.js"></script>
+
+    <!-- 5. Initialize ECharts and load data -->
+    <script type="text/javascript">
+        // Ensure the DOM is ready
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize ECharts instance on the div
+            var myChart = echarts.init(document.getElementById('main'));
+
+            // Make myChart globally accessible for graph-4.js if it expects that,
+            // or pass it explicitly. Our modified graph-4.js expects myChart to be global.
+            window.myChart = myChart;
+
+            // Load the graph data from TTL and render
+            if (typeof loadAndVisualizeGraph === 'function') {
+                loadAndVisualizeGraph().then(() => {
+                    // After data is loaded and initial option is set, register event handlers
+                    if (typeof registerEventHandlers === 'function') {
+                        registerEventHandlers();
+                    }
+                }).catch(error => {
+                    console.error("Error during graph load or event handler registration:", error);
+                    document.getElementById('main').innerHTML = '<p style="color:red;">Critical error initializing graph. Check console.</p>';
+                });
+            } else {
+                console.error('loadAndVisualizeGraph function not found. Check graph-4.js.');
+                document.getElementById('main').innerHTML = '<p style="color:red;">Error: Graph loading script not found. Check console.</p>';
+            }
+        });
+    </script>
+</body>
+</html> 
