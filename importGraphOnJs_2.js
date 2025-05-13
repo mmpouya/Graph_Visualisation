@@ -61,7 +61,7 @@ function getRandomColor() {
         },
         force: {
           edgeLength: 200, // Increased for better readability with more nodes
-          repulsion: 250,  // Increased
+          repulsion: 1000,  // Increased
           gravity: 0.1
         },
         data: [], // Will be populated by loadAndVisualizeGraph
@@ -314,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
               subjectNode.properties[predicateId] = objectId; // objectId here is the literal value
   
               // If it's a common naming predicate, update the node's display name
-              if (predicateId.endsWith(':hasName') || predicateId.endsWith('#label') || predicateId.endsWith('rdfs:label')) {
+              if (predicateId.endsWith(':hasName') || predicateId.endsWith('#label') || predicateId.endsWith('#label') || predicateId.endsWith('rdfs:label')) {
                   subjectNode.name = objectId; // Update name to the literal value
               }
           }

@@ -61,7 +61,7 @@ function getRandomColor() {
         },
         force: {
           edgeLength: 200, // Increased for better readability with more nodes
-          repulsion: 250,  // Increased
+          repulsion: 1000,  // Increased
           gravity: 0.1
         },
         data: [], // Will be populated by loadAndVisualizeGraph
