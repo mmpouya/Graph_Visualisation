@@ -1,0 +1,17 @@
+@prefix ex: <http://majles.tavasi.ir/graph/example#> .
+@prefix go: <http://majles.tavasi.ir/graph/ontology#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+ex:EmploymentRegulations rdf:type go:LegalEntity .
+ex:EmploymentRegulations go:hasName "مقررات مربوط به استخدام افراد گارد صنعت نفت"@fa .
+ex:EmploymentRegulations go:isBasedOn ex:EmploymentRegulationDocument .
+ex:EmploymentRegulations go:hasExclusivePreparationBy ex:NationalIranianOilCompany .
+
+ex:EmploymentRegulationDocument rdf:type go:LegalDocument .
+ex:EmploymentRegulationDocument go:hasName "آیین‌نامه استخدام افراد گارد صنعت نفت"@fa .
+
+ex:NationalIranianOilCompany rdf:type go:Organization .
+ex:NationalIranianOilCompany go:hasName "شرکت ملی نفت ایران"@fa .

@@ -1,0 +1,19 @@
+@prefix ex: <http://majles.tavasi.ir/graph/example#> .
+@prefix go: <http://majles.tavasi.ir/graph/ontology#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:NIOC go:HasObligation ex:GuardInsuranceObligation .
+ex:GuardInsuranceObligation rdf:type go:LegalObligation .
+ex:GuardInsuranceObligation go:HasAgent ex:NIOC .
+ex:GuardInsuranceObligation go:HasTheme ex:OilIndustryGuardInsurance .
+ex:OilIndustryGuardInsurance rdf:type go:Insurance .
+ex:OilIndustryGuardInsurance go:ProtectsAgainst ex:DutyRelatedIncidents .
+ex:OilIndustryGuardInsurance go:Insures ex:OilIndustryGuard .
+ex:OilIndustryGuard rdf:type go:Entity .
+ex:OilIndustryGuard rdfs:label "افراد گارد صنعت نفت" .
+ex:NIOC rdf:type go:Organization .
+ex:NIOC rdfs:label "شرکت ملی نفت ایران" .
+ex:DutyRelatedIncidents rdf:type go:Incident .
+ex:DutyRelatedIncidents rdfs:label "حوادث ناشی از انجام وظیفه" .

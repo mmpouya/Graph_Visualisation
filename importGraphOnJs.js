@@ -264,22 +264,37 @@ function getRandomColor() {
         if (
           params.componentType === 'series' &&
           params.seriesType === 'graph' &&
-          params.dataType === 'node'
+          params.dataType === 'node' &&
+          params.data && typeof params.data.id !== 'undefined' // Ensure params.data and its id exist
         ) {
-          // Find the node in our current data array by its id
+          // Find the node in our current ECharts option data array by its id
           const nodeInOption = option.series[0].data.find(n => n.id === params.data.id);
+  
           if (nodeInOption) {
-              nodeInOption.fixed = true; // Mark as fixed
-              // Note: ECharts' force layout might override x,y.
-              // To truly fix, you might also need to update x,y here from params.event.offsetX/Y
-              // and ensure force layout respects 'fixed'.
-              // For simplicity, just setting 'fixed: true' relies on ECharts behavior.
-              console.log(`Node ${nodeInOption.name} fixed.`);
-              // No need to call setOption here if only 'fixed' attribute is used by layout
-              // However, if x/y were updated directly: myChart.setOption(option);
+              // Mark the node as fixed so the force layout no longer affects it
+              nodeInOption.fixed = true; 
+              
+              // Capture the node's current x and y position after being dragged.
+              // params.data from the event contains the node's state, including its position.
+              if (typeof params.data.x === 'number' && typeof params.data.y === 'number') {
+                  nodeInOption.x = params.data.x; 
+                  nodeInOption.y = params.data.y;
+                  console.log(`Node '${nodeInOption.name}' (ID: ${nodeInOption.id}) fixed at (x: ${nodeInOption.x.toFixed(2)}, y: ${nodeInOption.y.toFixed(2)}).`);
+              } else {
+                  console.warn(`Node '${nodeInOption.name}' (ID: ${nodeInOption.id}) fixed, but x/y coordinates were not available in event params.data. The node will be fixed at its current layout position.`);
+              }
+              
+              // Update the chart with the modified node data.
+              // This tells ECharts to respect the new 'fixed' state and 'x', 'y' coordinates.
+              // The 'option' object has been directly mutated, so passing it to setOption
+              // will apply all changes. ECharts will diff and update efficiently.
+              myChart.setOption(option); 
+          } else {
+              console.warn("mouseup on node: Node not found in option.series[0].data. Event data ID:", params.data.id);
           }
         }
       });
+  
   
       // PART 2: Toggle extra "resource" nodes on double-click
       myChart.on('dblclick', function (params) {

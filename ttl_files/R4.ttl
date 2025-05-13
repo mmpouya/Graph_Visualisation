@@ -1,0 +1,37 @@
+@prefix ex: <http://majles.tavasi.ir/graph/example#> .
+@prefix go: <http://majles.tavasi.ir/graph/ontology#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:GuardPersonnel rdf:type go:PersonGroup .
+ex:GuardPersonnel go:hasRight ex:FirearmUseRight .
+
+ex:FirearmUseRight rdf:type go:Right .
+ex:FirearmUseRight go:hasCondition ex:LegalRegulation .
+ex:FirearmUseRight go:isGrantedBy ex:LawPreparedByAuthorities .
+
+ex:LegalRegulation rdf:type go:LegalEntity .
+ex:LegalRegulation go:hasDescription "قانون و آیین‌نامه‌ای که توسط وزارت دارایی و وزارت جنگ تهیه شده و به تصویب کمیسیون‌های نظام، جنگ و دادگستری مجلسین رسیده باشد"@fa .
+ex:LegalRegulation go:isApprovedBy ex:ParliamentaryCommissions .
+
+ex:LawPreparedByAuthorities rdf:type go:LegalEntity .
+ex:LawPreparedByAuthorities go:isPreparedBy ex:MinistryOfFinance, ex:MinistryOfWar .
+
+ex:MinistryOfFinance rdf:type go:GovernmentOrganization .
+ex:MinistryOfFinance go:hasName "وزارت دارایی"@fa .
+
+ex:MinistryOfWar rdf:type go:GovernmentOrganization .
+ex:MinistryOfWar go:hasName "وزارت جنگ"@fa .
+
+ex:ParliamentaryCommissions rdf:type go:OrganizationGroup .
+ex:ParliamentaryCommissions go:includes ex:MilitaryCommission, ex:WarCommission, ex:JudiciaryCommission .
+
+ex:MilitaryCommission rdf:type go:ParliamentaryCommission .
+ex:MilitaryCommission go:hasName "کمیسیون نظام"@fa .
+
+ex:WarCommission rdf:type go:ParliamentaryCommission .
+ex:WarCommission go:hasName "کمیسیون جنگ"@fa .
+
+ex:JudiciaryCommission rdf:type go:ParliamentaryCommission .
+ex:JudiciaryCommission go:hasName "کمیسیون دادگستری"@fa .

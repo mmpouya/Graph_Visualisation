@@ -1,0 +1,30 @@
+@prefix ex: <http://majles.tavasi.ir/graph/example#> .
+@prefix go: <http://majles.tavasi.ir/graph/ontology#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+ex:GuardOfOilIndustry rdf:type go:Organization .
+ex:GuardOfOilIndustry go:hasName "گارد صنعت نفت"@fa .
+ex:GuardOfOilIndustry go:hasPurpose ex:ProtectionPurpose .
+
+ex:ProtectionPurpose rdf:type go:Purpose .
+ex:ProtectionPurpose go:hasTheme ex:OilIndustryAssets .
+ex:ProtectionPurpose go:hasAgent ex:GuardOfOilIndustry .
+
+ex:OilIndustryAssets rdf:type go:AssetCollection .
+ex:OilIndustryAssets go:isPartOf ex:NationalIranianOilCompany .
+ex:OilIndustryAssets go:includes ex:OilFacilities, ex:OilDocuments, ex:OilProperties .
+
+ex:NationalIranianOilCompany rdf:type go:Organization .
+ex:NationalIranianOilCompany go:hasName "شرکت ملی نفت ایران"@fa .
+
+ex:FormationEvent rdf:type go:Event .
+ex:FormationEvent go:hasAgent ex:NationalIranianOilCompany .
+ex:FormationEvent go:hasTheme ex:GuardOfOilIndustry .
+ex:FormationEvent go:hasLegalBasis ex:LegalRequirement .
+
+ex:LegalRequirement rdf:type go:LegalEntity .
+ex:LegalRequirement go:hasDescription "الزام قانونی"@fa .
+

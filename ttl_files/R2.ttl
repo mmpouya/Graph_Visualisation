@@ -1,0 +1,28 @@
+@prefix ex: <http://majles.tavasi.ir/graph/example#> .
+@prefix go: <http://majles.tavasi.ir/graph/ontology#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:GuardOfOilIndustry rdf:type go:Organization .
+ex:GuardOfOilIndustry go:hasMember ex:GuardPersonnel .
+
+ex:GuardPersonnel rdf:type go:PersonGroup .
+ex:GuardPersonnel go:hasRole ex:MilitaryOfficerRole .
+ex:GuardPersonnel go:hasDuty ex:WatchDuty .
+
+ex:WatchDuty rdf:type go:Duty .
+ex:WatchDuty go:isPerformedDuring ex:GuardingEvent .
+ex:WatchDuty go:hasAssociatedResponsibility ex:MilitaryOfficerResponsibilities .
+
+ex:GuardingEvent rdf:type go:Event .
+ex:GuardingEvent go:hasAgent ex:GuardPersonnel .
+
+ex:MilitaryOfficerRole rdf:type go:Role .
+ex:MilitaryOfficerRole go:hasLegalBasis ex:LegalRequirement .
+
+ex:MilitaryOfficerResponsibilities rdf:type go:ResponsibilityCollection .
+ex:MilitaryOfficerResponsibilities go:hasDescription "وظایف، اختیارات و مسئولیت‌های ضابطین نظامی"@fa .
+
+ex:LegalRequirement rdf:type go:LegalEntity .
+ex:LegalRequirement go:hasDescription "الزام قانونی"@fa .

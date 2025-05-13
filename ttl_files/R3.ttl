@@ -1,0 +1,33 @@
+@prefix ex: <http://majles.tavasi.ir/graph/example#> .
+@prefix go: <http://majles.tavasi.ir/graph/ontology#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:GuardOfOilIndustry rdf:type go:Organization .
+ex:GuardOfOilIndustry go:hasMember ex:GuardPersonnel .
+
+ex:GuardPersonnel rdf:type go:PersonGroup .
+ex:GuardPersonnel go:hasDuty ex:LawEnforcementDuty .
+
+ex:LawEnforcementDuty rdf:type go:Duty .
+ex:LawEnforcementDuty go:isPerformedDuring ex:LawEnforcementEvent .
+ex:LawEnforcementDuty go:hasAssociatedResponsibility ex:LawResponsibilities .
+ex:LawEnforcementDuty go:hasLegalBasis ex:LawOf1336 .
+
+ex:LawEnforcementEvent rdf:type go:Event .
+ex:LawEnforcementEvent go:hasAgent ex:GuardPersonnel .
+ex:LawEnforcementEvent go:hasPurpose ex:EnforcingLaw .
+
+ex:EnforcingLaw rdf:type go:Purpose .
+ex:EnforcingLaw go:hasTheme ex:LawOf1336 .
+
+ex:LawResponsibilities rdf:type go:ResponsibilityCollection .
+ex:LawResponsibilities go:hasDescription "وظایف و اختیارات ذکر شده"@fa .
+
+ex:LawOf1336 rdf:type go:LegalEntity .
+ex:LawOf1336 go:hasName "قانون مجازات اخلالگران در صنایع نفت"@fa .
+ex:LawOf1336 go:wasPassedInYear "1336"^^xsd:gYear .
+ex:LawOf1336 go:hasJurisdiction ex:OilIndustry .
+
+ex:OilIndustry rdf:type go:Industry .
