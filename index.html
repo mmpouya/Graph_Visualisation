@@ -249,18 +249,15 @@
             <button id="clearGraphBtn" aria-label="Clear Graph">🧹 Clear Graph</button>
             <button id="zoomInBtn" aria-label="Zoom In">➕ Zoom In</button>
             <button id="zoomOutBtn" aria-label="Zoom Out">➖ Zoom Out</button>
-            <button id="toggleGridBtn" aria-label="Toggle Grid">#️⃣ Grid</button>
         </div>
 
-        <div id="main" aria-label="Graph visualization area" style="position:relative;overflow:hidden;">
-            <div id="graphGrid" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;"></div>
-            <div id="movingBg" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;"></div>
-            <div id="echartsContainer" style="position:relative;z-index:2;width:100%;height:100%;">
-                <p>Select a .ttl file and click "Visualize" to see the graph.</p>
-            </div>
+        <div id="main" aria-label="Graph visualization area">
+            <div id="echartsContainer" style="width:100%; height:100%;"></div>
+            <div id="movingBg" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0.1; pointer-events:none;"></div>
+            <p style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index: -1;">Load a TTL file to visualize your graph here.</p>
         </div>
 
-        <div id="notificationArea" aria-live="polite" style="position:fixed;top:30px;right:30px;z-index:9999;"></div>
+        <div id="notificationArea"></div>
     </div>
 
     <!-- Help Modal -->
