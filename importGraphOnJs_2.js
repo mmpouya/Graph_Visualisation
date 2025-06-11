@@ -36,6 +36,7 @@ function getRandomColor() {
       {
         type: 'graph',
         layout: 'force',
+        roam: true, // Enable built-in zoom/pan
         draggable: true,
         label: {
           show: true,
@@ -61,7 +62,7 @@ function getRandomColor() {
         },
         force: {
           edgeLength: 200, // Increased for better readability with more nodes
-          repulsion: 1000,  // Increased
+          repulsion: 1200,  // Increased
           gravity: 0.1
         },
         data: [], // Will be populated by loadAndVisualizeGraph
@@ -78,31 +79,56 @@ function getRandomColor() {
   // ---- RDF/TTL Parsing and Transformation Functions ----
  var myChart;
 
+// ---- Notification/Toast System ----
+function showNotification(message, type = 'info', duration = 3500) {
+    const area = document.getElementById('notificationArea');
+    if (!area) return alert(message); // fallback
+    const notif = document.createElement('div');
+    notif.textContent = message;
+    notif.style.background = type === 'error' ? '#ffdddd' : (type === 'success' ? '#d4edda' : '#e9ecef');
+    notif.style.color = '#333';
+    notif.style.border = type === 'error' ? '1px solid #e3342f' : (type === 'success' ? '1px solid #38c172' : '1px solid #bfc8d0');
+    notif.style.padding = '12px 20px';
+    notif.style.marginBottom = '10px';
+    notif.style.borderRadius = '6px';
+    notif.style.boxShadow = '0 2px 8px rgba(0,0,0,0.07)';
+    notif.style.fontSize = '1em';
+    notif.style.opacity = '0.98';
+    notif.style.transition = 'opacity 0.4s';
+    area.appendChild(notif);
+    setTimeout(() => {
+        notif.style.opacity = '0';
+        setTimeout(() => area.removeChild(notif), 400);
+    }, duration);
+}
+
 async function loadAndVisualizeGraph() {
+    // Hide the graph placeholder when visualizing the graph
+    const graphPlaceholder = document.querySelector('.graph-placeholder');
+    if (graphPlaceholder) {
+        graphPlaceholder.style.display = 'none';
+    }
     if (typeof N3 === 'undefined') {
         console.error("N3.js library is not loaded.");
-        alert("Critical Error: N3.js library is not loaded. Please ensure it's included in your HTML.");
+        showNotification("Critical Error: N3.js library is not loaded. Please ensure it's included in your HTML.", 'error');
         return;
     }
     if (typeof myChart === 'undefined' || !myChart) {
         console.error("ECharts 'myChart' instance not found.");
-        alert("Critical Error: ECharts 'myChart' instance not found. Please ensure it's initialized.");
+        showNotification("Critical Error: ECharts 'myChart' instance not found. Please ensure it's initialized.", 'error');
         return;
     }
 
     const fileInput = document.getElementById('fileInput');
     if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
         console.warn("No file selected.");
-        alert("Please select a TTL file first using the 'Choose File' button.");
-        // Optionally, you might want to clear the chart if a user clicks load without a file
-        // myChart.setOption({ series: [] }, true); // Clears the graph data
+        showNotification("Please select a TTL file first using the 'Choose File' button.", 'warning');
         return;
     }
 
     const file = fileInput.files[0];
     const reader = new FileReader();
 
-    // Show loading animation on the chart
     myChart.showLoading({ 
         text: `Loading and parsing: ${file.name}...`,
         color: '#5470c6',
@@ -117,80 +143,79 @@ async function loadAndVisualizeGraph() {
         const store = new N3.Store();
         let parsingError = null;
 
+        // --- Detect OWL type by prefix ---
+        let graphType = 'Unknown';
+        if (/^[ \t]*(@prefix|prefix)[ \t]+/im.test(ttlData)) {
+            graphType = 'OWL';
+        }
+
         try {
             parser.parse(ttlData, (error, quad, prefixes) => {
-                if (parsingError) return; // If an error was already caught, stop further processing
-
+                if (parsingError) return;
                 if (error) {
-                    parsingError = error; // Store the error
+                    parsingError = error;
                     console.error("Error during N3 parsing:", error);
-                    // Don't alert yet, wait for the 'else' (end of stream) block
                     return;
                 }
-
                 if (quad) {
                     store.addQuad(quad);
-                } else { // End of parsing (quad is null)
-                    myChart.hideLoading(); // Parsing process (attempt) is finished
-
+                } else {
+                    myChart.hideLoading();
                     if (parsingError) {
-                        alert(`Error parsing TTL file '${file.name}':\n${parsingError.message}\n\nCheck console for more details.`);
-                        // Optionally clear the chart or show an error state
-                        // option.series[0].data = []; option.series[0].links = []; myChart.setOption(option, true);
+                        showNotification(`Error parsing TTL file '${file.name}':\n${parsingError.message}\n\nCheck console for more details.`, 'error', 6000);
                         return; 
                     }
-
                     console.log(`TTL parsing complete for '${file.name}'. Prefixes:`, prefixes);
                     console.log("Total quads parsed:", store.size);
-
                     if (store.size === 0) {
-                        alert(`The TTL file '${file.name}' is empty or does not contain any valid triples that could be visualized.`);
+                        showNotification(`The TTL file '${file.name}' is empty or does not contain any valid triples that could be visualized.`, 'warning', 6000);
                         option.series[0].data = [];
                         option.series[0].links = [];
                         option.series[0].categories = [];
                         option.legend.data = [];
-                        myChart.setOption(option, true); // Clear the chart
+                        myChart.setOption(option, true);
+                        // --- Show type in fileInfoDisplay ---
+                        const fileInfoDisplay = document.getElementById('fileInfoDisplay');
+                        if (fileInfoDisplay) fileInfoDisplay.textContent = `Type: ${file.type || 'unknown'} | Size: ${(file.size/1024).toFixed(1)} KB | Graph Type: ${graphType}`;
                         return;
                     }
-
                     try {
                         const { nodes, links } = transformRdfToEcharts(store, prefixes);
                         console.log(`Transformed data for '${file.name}'. Nodes: ${nodes.length}, Links: ${links.length}`);
-
                         let message = `Successfully loaded and visualized '${file.name}'.`;
                         if (nodes.length === 0 && links.length === 0 && store.size > 0) {
                              console.warn("TTL data was parsed, but transformation resulted in an empty graph.");
                              message = `Data from '${file.name}' was parsed (${store.size} triples), but it resulted in an empty graph. Check if the data structure is suitable for the visualizer.`;
                         }
-                        // alert(message); // Optional: user feedback on success
-
+                        showNotification(message, 'success', 4000);
                         option.series[0].data = nodes;
                         option.series[0].links = links;
                         const categories = extractCategories(nodes);
                         option.series[0].categories = categories;
                         option.legend.data = categories.map(c => c.name);
-
-                        myChart.setOption(option, true); // 'true' to clear previous graph data and components
+                        myChart.setOption(option, true);
                         console.log("ECharts option set with new data from", file.name);
-
+                        // --- Show type in fileInfoDisplay ---
+                        const fileInfoDisplay = document.getElementById('fileInfoDisplay');
+                        if (fileInfoDisplay) fileInfoDisplay.textContent = `Type: ${file.type || 'unknown'} | Size: ${(file.size/1024).toFixed(1)} KB | Graph Type: ${graphType}`;
                     } catch (transformError) {
-                        myChart.hideLoading(); // Ensure loading is hidden
+                        myChart.hideLoading();
                         console.error("Error transforming RDF to ECharts data:", transformError);
-                        alert(`Error processing graph data from '${file.name}':\n${transformError.message}`);
+                        showNotification(`Error processing graph data from '${file.name}':\n${transformError.message}`, 'error', 6000);
                     }
                 }
             });
-        } catch (e) { // Catch synchronous errors from N3.Parser instantiation or initial .parse call
+        } catch (e) {
             myChart.hideLoading();
             console.error("Synchronous error during parsing setup:", e);
-            alert(`Critical error during TTL parsing setup for '${file.name}':\n${e.message}`);
+            showNotification(`Critical error during TTL parsing setup for '${file.name}':\n${e.message}`, 'error', 6000);
         }
     };
 
     reader.onerror = function(error) {
         myChart.hideLoading();
         console.error("Error reading file:", error);
-        alert(`Error reading file '${file.name}':\n${error.message}`);
+        showNotification(`Error reading file '${file.name}':\n${error.message}`, 'error', 6000);
     };
 
     reader.readAsText(file);
@@ -198,53 +223,144 @@ async function loadAndVisualizeGraph() {
 
 // --- Initialization logic (should be at the end of your script or in a DOMContentLoaded listener) ---
 document.addEventListener('DOMContentLoaded', () => {
-    const chartDom = document.getElementById('main');
+    const chartDom = document.getElementById('echartsContainer') || document.getElementById('main');
     const fileInput = document.getElementById('fileInput');
     const loadButton = document.getElementById('loadButton');
     const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const fileInfoDisplay = document.getElementById('fileInfoDisplay');
+    const resetZoomBtn = document.getElementById('resetZoomBtn');
+    const fitViewBtn = document.getElementById('fitViewBtn');
+    const clearGraphBtn = document.getElementById('clearGraphBtn');
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const helpButton = document.getElementById('helpButton');
+    const helpModal = document.getElementById('helpModal');
+    const closeHelpModal = document.getElementById('closeHelpModal');
+    const movingBg = document.getElementById('movingBg');
 
     if (!chartDom) {
-        console.error("ECharts container element with ID 'main' not found.");
-        alert("Error: Chart container not found. Graph cannot be displayed.");
+        showNotification("ECharts container element not found.", 'error');
         return;
     }
     if (!fileInput || !loadButton || !fileNameDisplay) {
-        console.error("Required HTML control elements (fileInput, loadButton, fileNameDisplay) not found.");
-        alert("Error: Page control elements missing. File loading functionality may be impaired.");
+        showNotification("Required HTML control elements (fileInput, loadButton, fileNameDisplay) not found.", 'error');
         return;
     }
     
-    // Ensure the global 'option' object is defined before initializing ECharts
     if (typeof option === 'undefined') {
-        console.error("Global 'option' object for ECharts is not defined. Please define it.");
-        alert("Configuration error: ECharts 'option' object is missing. Graph cannot be initialized.");
-        // As a fallback, you might define a very basic option here to prevent errors,
-        // but it's better to ensure 'option' is properly defined with your desired defaults.
-        // window.option = { title: { text: 'Graph (Option Undefined)' }, series: [] };
+        showNotification("Global 'option' object for ECharts is not defined.", 'error');
         return;
     }
 
     myChart = echarts.init(chartDom);
-    myChart.setOption(option); // Set initial options (e.g., empty graph with title)
+    myChart.setOption(option);
 
-    // Register event handlers for chart interactions (drag to fix, dblclick to expand)
     if (typeof registerEventHandlers === 'function') {
         registerEventHandlers();
-    } else {
-        console.warn("'registerEventHandlers' function is not defined. Chart interactions might not work.");
     }
 
-    // Attach event listener to the load button
-    loadButton.addEventListener('click', loadAndVisualizeGraph);
-
-    // Update file name display when a file is chosen
+    // --- Enhanced File Input Feedback ---
     fileInput.addEventListener('change', () => {
         if (fileInput.files.length > 0) {
-            fileNameDisplay.textContent = `Selected file: ${fileInput.files[0].name}`;
+            const file = fileInput.files[0];
+            fileNameDisplay.textContent = `Selected file: ${file.name}`;
+            fileInfoDisplay.textContent = `Type: ${file.type || 'unknown'} | Size: ${(file.size/1024).toFixed(1)} KB`;
+            loadButton.disabled = false;
         } else {
             fileNameDisplay.textContent = 'No file selected.';
+            fileInfoDisplay.textContent = '';
+            loadButton.disabled = true;
         }
     });
+
+    // --- Help Modal Logic ---
+    if (helpButton && helpModal && closeHelpModal) {
+        helpButton.addEventListener('click', () => {
+            helpModal.style.display = 'flex';
+        });
+        closeHelpModal.addEventListener('click', () => {
+            helpModal.style.display = 'none';
+        });
+        helpModal.addEventListener('click', (e) => {
+            if (e.target === helpModal) helpModal.style.display = 'none';
+        });
+        document.addEventListener('keydown', (e) => {
+            if (helpModal.style.display === 'flex' && (e.key === 'Escape' || e.key === 'Esc')) {
+                helpModal.style.display = 'none';
+            }
+        });
+    }
+
+    // --- Graph Controls ---
+    if (zoomInBtn) {
+        zoomInBtn.addEventListener('click', () => {
+            // Increase zoom by a factor (e.g., 1.2)
+            option.series[0].zoom = (option.series[0].zoom || 1) * 1.2;
+            myChart.setOption(option);
+            showNotification(`Zoomed in. Current zoom: ${option.series[0].zoom.toFixed(2)}x`, 'info', 1500);
+        });
+    }
+    if (zoomOutBtn) {
+        zoomOutBtn.addEventListener('click', () => {
+            // Decrease zoom by a factor (e.g., 1/1.2)
+            option.series[0].zoom = (option.series[0].zoom || 1) / 1.2;
+            myChart.setOption(option);
+            showNotification(`Zoomed out. Current zoom: ${option.series[0].zoom.toFixed(2)}x`, 'info', 1500);
+        });
+    }
+    if (resetZoomBtn) {
+        resetZoomBtn.addEventListener('click', () => {
+            if (myChart) myChart.dispatchAction({ type: 'restore' }); // Resets zoom and pan
+            showNotification('Zoom and pan reset.', 'info');
+        });
+    }
+    if (fitViewBtn) {
+        fitViewBtn.addEventListener('click', () => {
+            if (myChart) myChart.dispatchAction({ type: 'restore' }); // Resets zoom and pan
+            myChart.resize(); // Also ensures the chart fits its container
+            showNotification('Graph view fitted and zoom reset.', 'info');
+        });
+    }
+    if (clearGraphBtn) {
+        clearGraphBtn.addEventListener('click', () => {
+            option.series[0].data = [];
+            option.series[0].links = [];
+            option.series[0].categories = [];
+            option.legend.data = [];
+            myChart.setOption(option, true);
+            showNotification('Graph cleared.', 'info');
+        });
+    }
+
+    // --- Moving Background ---
+    if (movingBg) {
+        movingBg.style.background = 'linear-gradient(120deg, #f0f2f5 0%, #e0e7ef 100%)';
+        movingBg.style.backgroundSize = '200% 200%';
+        movingBg.style.animation = 'moveBgAnim 8s linear infinite';
+        // Add keyframes via JS if not present
+        if (!document.getElementById('moveBgAnimStyle')) {
+            const style = document.createElement('style');
+            style.id = 'moveBgAnimStyle';
+            style.innerHTML = `@keyframes moveBgAnim { 0% {background-position: 0% 50%;} 100% {background-position: 100% 50%;}}`;
+            document.head.appendChild(style);
+        }
+    }
+
+    // --- Load Button ---
+    loadButton.addEventListener('click', loadAndVisualizeGraph);
+    loadButton.disabled = !fileInput.files.length;
+
+    // --- Initial file info ---
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        fileNameDisplay.textContent = `Selected file: ${file.name}`;
+        fileInfoDisplay.textContent = `Type: ${file.type || 'unknown'} | Size: ${(file.size/1024).toFixed(1)} KB`;
+        loadButton.disabled = false;
+    } else {
+        fileNameDisplay.textContent = 'No file selected.';
+        fileInfoDisplay.textContent = '';
+        loadButton.disabled = true;
+    }
 
     console.log("Graph visualizer initialized. Ready to load TTL files.");
 });
@@ -271,51 +387,97 @@ document.addEventListener('DOMContentLoaded', () => {
           return term.value; // Should not happen for well-formed RDF terms
       }
   
+      // --- Pass 1: Collect predicates used as edges and edge labels ---
+      const edgePredicates = new Set();
+      const edgeLabels = {};
+      const labelPredicates = ['rdfs:label', 'skos:prefLabel', 'go:hasName', '#label'];
+      store.getQuads().forEach(quad => {
+          // If object is a NamedNode or BlankNode, this is an edge triple
+          if (quad.object.termType === 'NamedNode' || quad.object.termType === 'BlankNode') {
+              edgePredicates.add(getTermName(quad.predicate));
+          }
+      });
+      // Now collect edge labels for those predicates
+      store.getQuads().forEach(quad => {
+          const subjectId = getTermName(quad.subject);
+          const predicateId = getTermName(quad.predicate);
+          if (edgePredicates.has(subjectId) && labelPredicates.some(lp => predicateId.endsWith(lp)) && quad.object.termType === 'Literal') {
+              edgeLabels[subjectId] = quad.object.value;
+          }
+      });
+  
+      // --- Pass 2: Build nodes and links ---
       store.getQuads().forEach(quad => {
           const subjectId = getTermName(quad.subject);
           const predicateId = getTermName(quad.predicate);
           const objectId = getTermName(quad.object);
   
-          // Add subject node if not already added
-          if (!nodeMap.has(subjectId)) {
-              nodes.push({
-                  id: subjectId, // Use URI/blank node ID as ECharts ID
-                  name: subjectId, // Initial name, might be updated by literal
-                  category: guessCategory(quad.subject, store, prefixes, getTermName),
-                  properties: {}, // To store literal properties
-                  fixed: false,
-                  expanded: false
-              });
-              nodeMap.set(subjectId, nodes[nodes.length - 1]);
-          }
-          const subjectNode = nodeMap.get(subjectId);
-  
+          // Only create nodes for subjects and objects in edge triples
           if (quad.object.termType === 'NamedNode' || quad.object.termType === 'BlankNode') {
+              // Add subject node if not already added
+              if (!nodeMap.has(subjectId)) {
+                  let nodeSymbol = undefined;
+                  let nodeItemStyle = undefined;
+                  let nodeSymbolSize = undefined;
+                  if (typeof subjectId === 'string' && subjectId.startsWith('go:')) {
+                      nodeSymbol = 'diamond';
+                      nodeItemStyle = { color: '#FFA500' }; // Always orange for diamonds
+                      nodeSymbolSize = 70; // Bigger size for diamonds
+                  }
+                  nodes.push({
+                      id: subjectId,
+                      name: subjectId,
+                      category: guessCategory(quad.subject, store, prefixes, getTermName),
+                      properties: {},
+                      fixed: false,
+                      expanded: false,
+                      ...(nodeSymbol ? { symbol: nodeSymbol } : {}),
+                      ...(nodeItemStyle ? { itemStyle: nodeItemStyle } : {}),
+                      ...(nodeSymbolSize ? { symbolSize: nodeSymbolSize } : {})
+                  });
+                  nodeMap.set(subjectId, nodes[nodes.length - 1]);
+              }
+              // Add object node if not already added
               if (!nodeMap.has(objectId)) {
+                  let nodeSymbol = undefined;
+                  let nodeItemStyle = undefined;
+                  let nodeSymbolSize = undefined;
+                  if (typeof objectId === 'string' && objectId.startsWith('go:')) {
+                      nodeSymbol = 'diamond';
+                      nodeItemStyle = { color: '#FFA500' }; // Always orange for diamonds
+                      nodeSymbolSize = 70; // Bigger size for diamonds
+                  }
                   nodes.push({
                       id: objectId,
                       name: objectId,
                       category: guessCategory(quad.object, store, prefixes, getTermName),
                       properties: {},
                       fixed: false,
-                      expanded: false
+                      expanded: false,
+                      ...(nodeSymbol ? { symbol: nodeSymbol } : {}),
+                      ...(nodeItemStyle ? { itemStyle: nodeItemStyle } : {}),
+                      ...(nodeSymbolSize ? { symbolSize: nodeSymbolSize } : {})
                   });
                   nodeMap.set(objectId, nodes[nodes.length - 1]);
               }
+              // Use edge label if available, otherwise use predicateId
+              let edgeLabel = edgeLabels[predicateId] || predicateId;
               links.push({
-                  source: subjectId, // Use ID for source
-                  target: objectId, // Use ID for target
-                  label: { show: true, text: predicateId },
-                  lineStyle: { curveness: Math.random() * 0.2 } // Add some variance if many parallel edges
+                  source: subjectId,
+                  target: objectId,
+                  label: { show: true, text: edgeLabel },
+                  lineStyle: { curveness: Math.random() * 0.2 }
               });
           } else if (quad.object.termType === 'Literal') {
-              // Store literal as a property of the subject node
-              if (!subjectNode.properties) subjectNode.properties = {};
-              subjectNode.properties[predicateId] = objectId; // objectId here is the literal value
-  
-              // If it's a common naming predicate, update the node's display name
-              if (predicateId.endsWith(':hasName') || predicateId.endsWith('#label') || predicateId.endsWith('#label') || predicateId.endsWith('rdfs:label')) {
-                  subjectNode.name = objectId; // Update name to the literal value
+              // Only attach properties to nodes that exist (i.e., not predicates)
+              if (nodeMap.has(subjectId)) {
+                  const subjectNode = nodeMap.get(subjectId);
+                  if (!subjectNode.properties) subjectNode.properties = {};
+                  subjectNode.properties[predicateId] = objectId;
+                  // If it's a common naming predicate, update the node's display name
+                  if (predicateId.endsWith(':hasName') || predicateId.endsWith('#label') || predicateId.endsWith('rdfs:label')) {
+                      subjectNode.name = objectId;
+                  }
               }
           }
       });
@@ -323,23 +485,20 @@ document.addEventListener('DOMContentLoaded', () => {
       // Post-process names if a display name was preferred but ID is different
       nodes.forEach(node => {
           if (node.name !== node.id && node.properties) {
-               // Check if an explicit name was set that is different from its ID
-               // If the name property itself is the ID, but we have a label from properties, prefer that.
-              let potentialName = node.id; // fallback
-              const namePredicates = ['rdfs:label', 'go:hasName', 'skos:prefLabel']; // Add more as needed
+              let potentialName = node.id;
+              const namePredicates = ['rdfs:label', 'go:hasName', 'skos:prefLabel'];
               for(const p of namePredicates) {
                   if(node.properties[p]) {
                       potentialName = node.properties[p];
                       break;
                   }
               }
-              // To make it more readable if the ID is a long URI
               if (node.name === node.id && potentialName !== node.id) {
-                   node.name = `${potentialName} (${node.id.split('/').pop().split('#').pop()})`;
+                  node.name = `${potentialName} (${node.id.split('/').pop().split('#').pop()})`;
               } else {
-                   node.name = node.name; // Already set or no better alternative
+                  node.name = node.name;
               }
-          } else if (node.name === node.id) { // if name is still the full ID, try to shorten it
+          } else if (node.name === node.id) {
               node.name = node.id.split('/').pop().split('#').pop();
           }
       });
