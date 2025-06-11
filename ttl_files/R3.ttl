@@ -40,3 +40,25 @@ ex:LawOf1336 rdfs:label "قانون مجازات اخلالگران در صنا�
 ex:OilIndustry rdfs:label "صنعت نفت"@fa .
 go:wasPassedInYear rdfs:label "تصویب در سال"@fa .
 go:hasJurisdiction rdfs:label "حوزه قضایی"@fa .
+
+
+go:hasPurpose rdfs:label "هدف"@fa .
+go:hasTheme rdfs:label "موضوع"@fa .
+go:hasAgent rdfs:label "عامل"@fa .
+go:hasDescription rdfs:label "توضیح"@fa .
+go:hasMember rdfs:label "عضو"@fa .
+go:hasRole rdfs:label "نقش"@fa .
+go:hasDuty rdfs:label "وظیفه"@fa .
+go:wasPassedInYear rdfs:label "تصویب در سال"@fa .
+go:hasJurisdiction rdfs:label "حوزه قضایی"@fa . 
+go:hasPurpose rdfs:label "هدف"@fa .
+go:isPartOf rdfs:label "جزئی از"@fa .
+go:includes rdfs:label "شامل"@fa .
+go:hasLegalBasis rdfs:label "مبنای قانونی"@fa .
+go:isPerformedDuring rdfs:label "انجام می‌شود در"@fa .
+go:hasAssociatedResponsibility rdfs:label "مسئولیت مرتبط"@fa .
+go:hasDescription rdfs:label "توضیح"@fa .
+go:Event rdfs:label "رخداد"@fa .
+go:LegalEntity rdfs:label "هویت حقوقی"@fa .
+go:LegalDocument rdfs:label "سند حقوقی"@fa .
+go:Organization rdfs:label "سازمان"@fa .

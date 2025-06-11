@@ -102,6 +102,187 @@ function showNotification(message, type = 'info', duration = 3500) {
     }, duration);
 }
 
+// Configuration for progressive loading
+const PROGRESSIVE_LOADING_CONFIG = {
+    initialNodeLimit: 25,  // Number of nodes to show initially
+    batchSize: 25,         // Number of nodes to load in each batch
+    maxNodes: 500,        // Maximum number of nodes to show at once
+    maxLinks: 1000         // Maximum number of links to show at once
+};
+
+// Filter configuration
+const FILTER_CONFIG = {
+    searchTerm: '',
+    selectedCategories: new Set(),
+    maxDepth: Infinity,
+    showOnlyConnected: false
+};
+
+// Store for original graph data
+let originalGraphData = null;
+
+// Add these UI elements to your HTML:
+// <div id="filterControls" style="margin: 10px;">
+//     <input type="text" id="searchInput" placeholder="Search nodes...">
+//     <select id="categoryFilter" multiple>
+//         <option value="all">All Categories</option>
+//     </select>
+//     <input type="number" id="depthFilter" min="1" value="1" placeholder="Max Depth">
+//     <button id="applyFilters">Apply Filters</button>
+//     <button id="loadMore">Load More</button>
+// </div>
+
+function initializeFilterControls() {
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const depthFilter = document.getElementById('depthFilter');
+    const applyFiltersBtn = document.getElementById('applyFilters');
+    const loadMoreBtn = document.getElementById('loadMore');
+
+    if (!searchInput || !categoryFilter || !depthFilter || !applyFiltersBtn || !loadMoreBtn) {
+        console.warn("Filter controls not found in HTML. Skipping initialization.");
+        return;
+    }
+
+    // Initialize category filter options
+    function updateCategoryOptions(categories) {
+        categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+        categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.textContent = cat;
+            categoryFilter.appendChild(option);
+        });
+    }
+
+    // Search input handler
+    searchInput.addEventListener('input', (e) => {
+        FILTER_CONFIG.searchTerm = e.target.value.toLowerCase();
+        applyFilters();
+    });
+
+    // Category filter handler
+    categoryFilter.addEventListener('change', () => {
+        FILTER_CONFIG.selectedCategories = new Set(
+            Array.from(categoryFilter.selectedOptions).map(opt => opt.value)
+        );
+        applyFilters();
+    });
+
+    // Depth filter handler
+    depthFilter.addEventListener('change', (e) => {
+        FILTER_CONFIG.maxDepth = parseInt(e.target.value) || Infinity;
+        applyFilters();
+    });
+
+    // Apply filters button handler
+    applyFiltersBtn.addEventListener('click', applyFilters);
+
+    // Load more button handler
+    loadMoreBtn.addEventListener('click', loadMoreNodes);
+
+    // Initial category options update
+    if (option.series[0].categories) {
+        updateCategoryOptions(option.series[0].categories.map(c => c.name));
+    }
+}
+
+function applyFilters() {
+    if (!originalGraphData) return;
+    
+    const currentNodes = originalGraphData.nodes;
+    const currentLinks = originalGraphData.links;
+    
+    // Filter nodes based on search term and categories
+    const filteredNodes = currentNodes.filter(node => {
+        const matchesSearch = !FILTER_CONFIG.searchTerm || 
+            node.name.toLowerCase().includes(FILTER_CONFIG.searchTerm) ||
+            node.id.toLowerCase().includes(FILTER_CONFIG.searchTerm);
+        
+        const matchesCategory = FILTER_CONFIG.selectedCategories.size === 0 || 
+            FILTER_CONFIG.selectedCategories.has('all') ||
+            FILTER_CONFIG.selectedCategories.has(node.category);
+        
+        return matchesSearch && matchesCategory;
+    }).slice(0, PROGRESSIVE_LOADING_CONFIG.maxNodes);
+
+    // Filter links based on filtered nodes
+    const filteredLinks = currentLinks.filter(link => {
+        const sourceNode = filteredNodes.find(n => n.id === link.source);
+        const targetNode = filteredNodes.find(n => n.id === link.target);
+        return sourceNode && targetNode;
+    }).slice(0, PROGRESSIVE_LOADING_CONFIG.maxLinks);
+
+    // Update the graph with filtered data
+    option.series[0].data = filteredNodes;
+    option.series[0].links = filteredLinks;
+    myChart.setOption(option);
+    
+    // Update file info display
+    const fileInfoDisplay = document.getElementById('fileInfoDisplay');
+    if (fileInfoDisplay) {
+        const originalText = fileInfoDisplay.textContent.split(' | ');
+        const nodeInfo = originalText.find(t => t.includes('Nodes:'));
+        if (nodeInfo) {
+            const newText = originalText.map(t => 
+                t === nodeInfo ? `Nodes: ${originalGraphData.nodes.length} (Showing: ${filteredNodes.length})` : t
+            ).join(' | ');
+            fileInfoDisplay.textContent = newText;
+        }
+    }
+}
+
+function loadMoreNodes() {
+    if (!originalGraphData) return;
+    
+    const currentNodes = option.series[0].data;
+    const currentLinks = option.series[0].links;
+    
+    // Calculate how many more nodes to load
+    const nodesToLoad = Math.min(
+        PROGRESSIVE_LOADING_CONFIG.batchSize,
+        PROGRESSIVE_LOADING_CONFIG.maxNodes - currentNodes.length
+    );
+    
+    if (nodesToLoad <= 0) {
+        showNotification("Maximum node limit reached.", 'warning');
+        return;
+    }
+    
+    // Load next batch of nodes
+    const newNodes = originalGraphData.nodes.slice(currentNodes.length, currentNodes.length + nodesToLoad);
+    
+    // Find links connected to new nodes
+    const newLinks = originalGraphData.links.filter(link => {
+        const sourceInNew = newNodes.some(n => n.id === link.source);
+        const targetInNew = newNodes.some(n => n.id === link.target);
+        const sourceInCurrent = currentNodes.some(n => n.id === link.source);
+        const targetInCurrent = currentNodes.some(n => n.id === link.target);
+        return (sourceInNew && targetInCurrent) || (sourceInCurrent && targetInNew);
+    });
+    
+    // Update the graph
+    option.series[0].data = [...currentNodes, ...newNodes];
+    option.series[0].links = [...currentLinks, ...newLinks];
+    myChart.setOption(option);
+    
+    // Update file info display
+    const fileInfoDisplay = document.getElementById('fileInfoDisplay');
+    if (fileInfoDisplay) {
+        const originalText = fileInfoDisplay.textContent.split(' | ');
+        const nodeInfo = originalText.find(t => t.includes('Nodes:'));
+        if (nodeInfo) {
+            const newText = originalText.map(t => 
+                t === nodeInfo ? `Nodes: ${originalGraphData.nodes.length} (Showing: ${currentNodes.length + newNodes.length})` : t
+            ).join(' | ');
+            fileInfoDisplay.textContent = newText;
+        }
+    }
+    
+    showNotification(`Loaded ${newNodes.length} more nodes and ${newLinks.length} links.`, 'info');
+}
+
+// Modify the loadAndVisualizeGraph function to store original data and implement progressive loading
 async function loadAndVisualizeGraph() {
     // Hide the graph placeholder when visualizing the graph
     const graphPlaceholder = document.querySelector('.graph-placeholder');
@@ -188,16 +369,31 @@ async function loadAndVisualizeGraph() {
                              message = `Data from '${file.name}' was parsed (${store.size} triples), but it resulted in an empty graph. Check if the data structure is suitable for the visualizer.`;
                         }
                         showNotification(message, 'success', 4000);
-                        option.series[0].data = nodes;
-                        option.series[0].links = links;
-                        const categories = extractCategories(nodes);
+                        
+                        // Store original data for progressive loading
+                        originalGraphData = { nodes, links };
+                        
+                        // Initially load only a subset of nodes
+                        const initialNodes = nodes.slice(0, PROGRESSIVE_LOADING_CONFIG.initialNodeLimit);
+                        const initialLinks = links.filter(link => {
+                            const sourceInInitial = initialNodes.some(n => n.id === link.source);
+                            const targetInInitial = initialNodes.some(n => n.id === link.target);
+                            return sourceInInitial && targetInInitial;
+                        });
+                        
+                        option.series[0].data = initialNodes;
+                        option.series[0].links = initialLinks;
+                        const categories = extractCategories(initialNodes);
                         option.series[0].categories = categories;
                         option.legend.data = categories.map(c => c.name);
+                        
                         myChart.setOption(option, true);
-                        console.log("ECharts option set with new data from", file.name);
-                        // --- Show type in fileInfoDisplay ---
-                        const fileInfoDisplay = document.getElementById('fileInfoDisplay');
-                        if (fileInfoDisplay) fileInfoDisplay.textContent = `Type: ${file.type || 'unknown'} | Size: ${(file.size/1024).toFixed(1)} KB | Graph Type: ${graphType}`;
+                        
+                        // Initialize filter controls
+                        initializeFilterControls();
+                        
+                        showNotification(`Loaded initial ${initialNodes.length} nodes and ${initialLinks.length} links. Use "Load More" to see more.`, 'success');
+                        
                     } catch (transformError) {
                         myChart.hideLoading();
                         console.error("Error transforming RDF to ECharts data:", transformError);
@@ -585,80 +781,26 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   
   
-      // PART 2: Toggle extra "resource" nodes on double-click
+      // PART 2: Load more nodes on double-click
       myChart.on('dblclick', function (params) {
         if (
           params.componentType === 'series' &&
           params.seriesType === 'graph' &&
           params.dataType === 'node'
         ) {
-          const clickedNodeId = params.data.id;
-          const currentNodes = option.series[0].data;
-          const currentLinks = option.series[0].links;
-  
-          // Find the clicked node in the option.series[0].data array
-          let clickedNode = currentNodes.find(n => n.id === clickedNodeId);
-  
-          if (!clickedNode) {
-              console.error("Clicked node not found in options data:", clickedNodeId);
-              return;
+          // Load more nodes when double-clicking any node
+          loadMoreNodes();
+          
+          // If the clicked node is not fixed, fix it at its current position
+          const clickedNode = option.series[0].data.find(n => n.id === params.data.id);
+          if (clickedNode && !clickedNode.fixed) {
+              clickedNode.fixed = true;
+              if (typeof params.data.x === 'number' && typeof params.data.y === 'number') {
+                  clickedNode.x = params.data.x;
+                  clickedNode.y = params.data.y;
+              }
+              myChart.setOption(option);
           }
-  
-          const resourcePrefix = clickedNode.id + '_Resource_';
-  
-          if (!clickedNode.expanded) {
-            var resourceColor = getRandomColor();
-            var resourceNodes = [];
-            var resourceLinks = [];
-            var resourceCount = 2; // Adjust as desired.
-  
-            for (var i = 1; i <= resourceCount; i++) {
-              var resourceId = resourcePrefix + i;
-              var resourceDisplayName = clickedNode.name.split(' (')[0] + '_Resource ' + i;
-              resourceNodes.push({
-                id: resourceId,
-                name: resourceDisplayName,
-                // x: clickedNode.x ? clickedNode.x + i * 50 : undefined, // ECharts handles position
-                // y: clickedNode.y ? clickedNode.y + i * 50 : undefined,
-                fixed: false,
-                expanded: false,
-                isResource: true, // Custom flag
-                category: 'Resource', // Assign a category for styling if needed
-                itemStyle: {
-                  color: resourceColor
-                }
-              });
-              resourceLinks.push({
-                source: clickedNode.id,
-                target: resourceId,
-                label: { show: true, text: 'has_resource' },
-                lineStyle: { curveness: 0.1 }
-              });
-            }
-            clickedNode.expanded = true;
-  
-            option.series[0].data = currentNodes.concat(resourceNodes);
-            option.series[0].links = currentLinks.concat(resourceLinks);
-            
-            // Ensure 'Resource' category exists if not already
-            let categories = option.series[0].categories;
-            if (!categories.find(cat => cat.name === 'Resource')) {
-                categories.push({ name: 'Resource', itemStyle: { color: getRandomColor() } });
-                option.legend.data = categories.map(c => c.name);
-            }
-  
-          } else {
-            // Remove resource nodes and links
-            option.series[0].data = currentNodes.filter(node => {
-              return !(node.isResource && node.id.startsWith(resourcePrefix));
-            });
-            option.series[0].links = currentLinks.filter(link => {
-              return !( (typeof link.target === 'string' && link.target.startsWith(resourcePrefix)) ||
-                        (typeof link.source === 'string' && link.source.startsWith(resourcePrefix)) );
-            });
-            clickedNode.expanded = false;
-          }
-          myChart.setOption(option);
         }
       });
       console.log("Event handlers registered.");

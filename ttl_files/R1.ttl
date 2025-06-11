@@ -38,6 +38,7 @@ ex:OilFacilities rdfs:label "تأسیسات نفتی"@fa .
 ex:OilDocuments rdfs:label "اسناد نفتی"@fa .
 ex:OilProperties rdfs:label "اموال نفتی"@fa .
 
+
 go:hasPurpose rdfs:label "هدف"@fa .
 go:hasTheme rdfs:label "موضوع"@fa .
 go:hasAgent rdfs:label "عامل"@fa .
@@ -45,4 +46,7 @@ go:isPartOf rdfs:label "جزئی از"@fa .
 go:includes rdfs:label "شامل"@fa .
 go:hasLegalBasis rdfs:label "مبنای قانونی"@fa .
 go:hasDescription rdfs:label "توضیح"@fa .
-
+go:Event rdfs:label "رخداد"@fa .
+go:LegalEntity rdfs:label "هویت حقوقی"@fa .
+go:LegalDocument rdfs:label "سند حقوقی"@fa .
+go:Organization rdfs:label "سازمان"@fa .

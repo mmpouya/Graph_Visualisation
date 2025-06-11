@@ -51,3 +51,6 @@ go:includes rdfs:label "شامل"@fa .
 go:hasLegalBasis rdfs:label "مبنای قانونی"@fa .
 go:hasDescription rdfs:label "توضیح"@fa .
 go:Event rdfs:label "رخداد"@fa .
+go:LegalEntity rdfs:label "هویت حقوقی"@fa .
+go:LegalDocument rdfs:label "سند حقوقی"@fa .
+go:Organization rdfs:label "سازمان"@fa .

@@ -1,0 +1,294 @@
+@prefix ex: <http://majles.tavasi.ir/graph/example#> .
+@prefix go: <http://majles.tavasi.ir/graph/ontology#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+ex:GuardOfOilIndustry rdf:type go:Organization .
+ex:GuardOfOilIndustry go:hasName "گارد صنعت نفت"@fa .
+ex:GuardOfOilIndustry go:hasPurpose ex:ProtectionPurpose .
+ex:GuardOfOilIndustry rdfs:label "گارد صنعت نفت"@fa .
+
+ex:ProtectionPurpose rdf:type go:Purpose .
+ex:ProtectionPurpose go:hasTheme ex:OilIndustryAssets .
+ex:ProtectionPurpose go:hasAgent ex:GuardOfOilIndustry .
+ex:ProtectionPurpose rdfs:label "هدف حفاظت"@fa .
+
+ex:OilIndustryAssets rdf:type go:AssetCollection .
+ex:OilIndustryAssets go:isPartOf ex:NationalIranianOilCompany .
+ex:OilIndustryAssets go:includes ex:OilFacilities, ex:OilDocuments, ex:OilProperties .
+ex:OilIndustryAssets rdfs:label "دارایی‌های صنعت نفت"@fa .
+
+ex:NationalIranianOilCompany rdf:type go:Organization .
+ex:NationalIranianOilCompany go:hasName "شرکت ملی نفت ایران"@fa .
+ex:NationalIranianOilCompany rdfs:label "شرکت ملی نفت ایران"@fa .
+
+ex:FormationEvent rdf:type go:Event .
+ex:FormationEvent go:hasAgent ex:NationalIranianOilCompany .
+ex:FormationEvent go:hasTheme ex:GuardOfOilIndustry .
+ex:FormationEvent go:hasLegalBasis ex:LegalRequirement .
+ex:FormationEvent rdfs:label "رویداد تشکیل"@fa .
+
+ex:LegalRequirement rdf:type go:LegalEntity .
+ex:LegalRequirement go:hasDescription "الزام قانونی"@fa .
+ex:LegalRequirement rdfs:label "الزام قانونی"@fa .
+
+ex:OilFacilities rdfs:label "تأسیسات نفتی"@fa .
+ex:OilDocuments rdfs:label "اسناد نفتی"@fa .
+ex:OilProperties rdfs:label "اموال نفتی"@fa .
+
+
+go:hasPurpose rdfs:label "هدف"@fa .
+go:hasTheme rdfs:label "موضوع"@fa .
+go:hasAgent rdfs:label "عامل"@fa .
+go:isPartOf rdfs:label "جزئی از"@fa .
+go:includes rdfs:label "شامل"@fa .
+go:hasLegalBasis rdfs:label "مبنای قانونی"@fa .
+go:hasDescription rdfs:label "توضیح"@fa .
+go:Event rdfs:label "رخداد"@fa .
+go:LegalEntity rdfs:label "هویت حقوقی"@fa .
+go:LegalDocument rdfs:label "سند حقوقی"@fa .
+go:Organization rdfs:label "سازمان"@fa .
+
+
+ex:GuardOfOilIndustry rdf:type go:Organization .
+ex:GuardOfOilIndustry go:hasMember ex:GuardPersonnel .
+ex:GuardOfOilIndustry rdfs:label "گارد صنعت نفت"@fa .
+
+ex:GuardPersonnel rdf:type go:PersonGroup .
+ex:GuardPersonnel go:hasRole ex:MilitaryOfficerRole .
+ex:GuardPersonnel go:hasDuty ex:WatchDuty .
+ex:GuardPersonnel rdfs:label "پرسنل گارد"@fa .
+
+ex:WatchDuty rdf:type go:Duty .
+ex:WatchDuty go:isPerformedDuring ex:GuardingEvent .
+ex:WatchDuty go:hasAssociatedResponsibility ex:MilitaryOfficerResponsibilities .
+ex:WatchDuty rdfs:label "وظیفه نگهبانی"@fa .
+
+ex:GuardingEvent rdf:type go:Event .
+ex:GuardingEvent go:hasAgent ex:GuardPersonnel .
+ex:GuardingEvent rdfs:label "رویداد نگهبانی"@fa .
+
+ex:MilitaryOfficerRole rdf:type go:Role .
+ex:MilitaryOfficerRole go:hasLegalBasis ex:LegalRequirement .
+ex:MilitaryOfficerRole rdfs:label "نقش افسر نظامی"@fa .
+
+ex:MilitaryOfficerResponsibilities rdf:type go:ResponsibilityCollection .
+ex:MilitaryOfficerResponsibilities go:hasDescription "وظایف، اختیارات و مسئولیت‌های ضابطین نظامی"@fa .
+ex:MilitaryOfficerResponsibilities rdfs:label "مسئولیت‌های افسر نظامی"@fa .
+
+ex:LegalRequirement rdf:type go:LegalEntity .
+ex:LegalRequirement go:hasDescription "الزام قانونی"@fa .
+ex:LegalRequirement rdfs:label "الزام قانونی"@fa .
+
+go:hasMember rdfs:label "عضو"@fa .
+go:hasRole rdfs:label "نقش"@fa .
+go:hasDuty rdfs:label "وظیفه"@fa .
+go:isPerformedDuring rdfs:label "انجام می‌شود در"@fa .
+go:hasAssociatedResponsibility rdfs:label "مسئولیت مرتبط"@fa .
+go:hasAgent rdfs:label "عامل"@fa .
+go:hasLegalBasis rdfs:label "مبنای قانونی"@fa .
+
+
+go:hasPurpose rdfs:label "هدف"@fa .
+go:hasTheme rdfs:label "موضوع"@fa .
+go:hasAgent rdfs:label "عامل"@fa .
+go:hasDescription rdfs:label "توضیح"@fa .
+go:hasMember rdfs:label "عضو"@fa .
+go:hasRole rdfs:label "نقش"@fa .
+go:hasDuty rdfs:label "وظیفه"@fa .
+go:wasPassedInYear rdfs:label "تصویب در سال"@fa .
+go:hasJurisdiction rdfs:label "حوزه قضایی"@fa . 
+go:hasPurpose rdfs:label "هدف"@fa .
+go:isPartOf rdfs:label "جزئی از"@fa .
+go:includes rdfs:label "شامل"@fa .
+go:hasLegalBasis rdfs:label "مبنای قانونی"@fa .
+go:isPerformedDuring rdfs:label "انجام می‌شود در"@fa .
+go:hasAssociatedResponsibility rdfs:label "مسئولیت مرتبط"@fa .
+go:hasDescription rdfs:label "توضیح"@fa .
+go:Event rdfs:label "رخداد"@fa .
+go:LegalEntity rdfs:label "هویت حقوقی"@fa .
+go:LegalDocument rdfs:label "سند حقوقی"@fa .
+go:Organization rdfs:label "سازمان"@fa .
+
+ex:GuardOfOilIndustry rdf:type go:Organization .
+ex:GuardOfOilIndustry go:hasMember ex:GuardPersonnel .
+
+ex:GuardPersonnel rdf:type go:PersonGroup .
+ex:GuardPersonnel go:hasDuty ex:LawEnforcementDuty .
+
+ex:LawEnforcementDuty rdf:type go:Duty .
+ex:LawEnforcementDuty go:isPerformedDuring ex:LawEnforcementEvent .
+ex:LawEnforcementDuty go:hasAssociatedResponsibility ex:LawResponsibilities .
+ex:LawEnforcementDuty go:hasLegalBasis ex:LawOf1336 .
+
+ex:LawEnforcementEvent rdf:type go:Event .
+ex:LawEnforcementEvent go:hasAgent ex:GuardPersonnel .
+ex:LawEnforcementEvent go:hasPurpose ex:EnforcingLaw .
+
+ex:EnforcingLaw rdf:type go:Purpose .
+ex:EnforcingLaw go:hasTheme ex:LawOf1336 .
+
+ex:LawResponsibilities rdf:type go:ResponsibilityCollection .
+ex:LawResponsibilities go:hasDescription "وظایف و اختیارات ذکر شده"@fa .
+
+ex:LawOf1336 rdf:type go:LegalEntity .
+ex:LawOf1336 go:hasName "قانون مجازات اخلالگران در صنایع نفت"@fa .
+ex:LawOf1336 go:wasPassedInYear "1336"^^xsd:gYear .
+ex:LawOf1336 go:hasJurisdiction ex:OilIndustry .
+
+ex:OilIndustry rdf:type go:Industry .
+
+ex:LawEnforcementDuty rdfs:label "وظیفه اجرای قانون"@fa .
+ex:LawEnforcementEvent rdfs:label "رویداد اجرای قانون"@fa .
+ex:EnforcingLaw rdfs:label "اجرای قانون"@fa .
+ex:LawResponsibilities rdfs:label "مسئولیت‌های قانونی"@fa .
+ex:LawOf1336 rdfs:label "قانون مجازات اخلالگران در صنایع نفت"@fa .
+ex:OilIndustry rdfs:label "صنعت نفت"@fa .
+go:wasPassedInYear rdfs:label "تصویب در سال"@fa .
+go:hasJurisdiction rdfs:label "حوزه قضایی"@fa .
+
+
+ex:GuardPersonnel rdf:type go:PersonGroup .
+ex:GuardPersonnel go:hasRight ex:FirearmUseRight .
+
+ex:FirearmUseRight rdf:type go:Right .
+ex:FirearmUseRight go:hasCondition ex:LegalRegulation .
+ex:FirearmUseRight go:isGrantedBy ex:LawPreparedByAuthorities .
+
+ex:LegalRegulation rdf:type go:LegalEntity .
+ex:LegalRegulation go:hasDescription "قانون و آیین‌نامه‌ای که توسط وزارت دارایی و وزارت جنگ تهیه شده و به تصویب کمیسیون‌های نظام، جنگ و دادگستری مجلسین رسیده باشد"@fa .
+ex:LegalRegulation go:isApprovedBy ex:ParliamentaryCommissions .
+
+ex:LawPreparedByAuthorities rdf:type go:LegalEntity .
+ex:LawPreparedByAuthorities go:isPreparedBy ex:MinistryOfFinance, ex:MinistryOfWar .
+
+ex:MinistryOfFinance rdf:type go:GovernmentOrganization .
+ex:MinistryOfFinance go:hasName "وزارت دارایی"@fa .
+
+ex:MinistryOfWar rdf:type go:GovernmentOrganization .
+ex:MinistryOfWar go:hasName "وزارت جنگ"@fa .
+
+ex:ParliamentaryCommissions rdf:type go:OrganizationGroup .
+ex:ParliamentaryCommissions go:includes ex:MilitaryCommission, ex:WarCommission, ex:JudiciaryCommission .
+
+ex:MilitaryCommission rdf:type go:ParliamentaryCommission .
+ex:MilitaryCommission go:hasName "کمیسیون نظام"@fa .
+
+ex:WarCommission rdf:type go:ParliamentaryCommission .
+ex:WarCommission go:hasName "کمیسیون جنگ"@fa .
+
+ex:JudiciaryCommission rdf:type go:ParliamentaryCommission .
+ex:JudiciaryCommission go:hasName "کمیسیون دادگستری"@fa .
+
+go:hasPurpose rdfs:label "هدف"@fa .
+go:hasTheme rdfs:label "موضوع"@fa .
+go:hasAgent rdfs:label "عامل"@fa .
+go:hasDescription rdfs:label "توضیح"@fa .
+go:hasMember rdfs:label "عضو"@fa .
+go:hasRole rdfs:label "نقش"@fa .
+go:hasDuty rdfs:label "وظیفه"@fa .
+go:wasPassedInYear rdfs:label "تصویب در سال"@fa .
+go:hasJurisdiction rdfs:label "حوزه قضایی"@fa . 
+go:hasPurpose rdfs:label "هدف"@fa .
+go:isPartOf rdfs:label "جزئی از"@fa .
+go:includes rdfs:label "شامل"@fa .
+go:hasLegalBasis rdfs:label "مبنای قانونی"@fa .
+go:isPerformedDuring rdfs:label "انجام می‌شود در"@fa .
+go:hasAssociatedResponsibility rdfs:label "مسئولیت مرتبط"@fa .
+go:hasDescription rdfs:label "توضیح"@fa .
+go:Event rdfs:label "رخداد"@fa .
+go:LegalEntity rdfs:label "هویت حقوقی"@fa .
+go:LegalDocument rdfs:label "سند حقوقی"@fa .
+go:Organization rdfs:label "سازمان"@fa .
+
+ex:FirearmUseRegulation rdf:type go:LegalEntity .
+ex:FirearmUseRegulation go:hasName "آیین‌نامه مربوط به استفاده از اسلحه توسط افراد گارد صنعت نفت"@fa .
+ex:FirearmUseRegulation go:isPreparedBy ex:MinistryOfFinance, ex:MinistryOfWar .
+ex:FirearmUseRegulation go:requiresApprovalBy ex:ParliamentaryCommissions .
+
+ex:MinistryOfFinance rdf:type go:GovernmentOrganization .
+ex:MinistryOfFinance go:hasName "وزارت دارایی"@fa .
+
+ex:MinistryOfWar rdf:type go:GovernmentOrganization .
+ex:MinistryOfWar go:hasName "وزارت جنگ"@fa .
+
+ex:ParliamentaryCommissions rdf:type go:OrganizationGroup .
+ex:ParliamentaryCommissions go:includes ex:MilitaryCommission, ex:WarCommission, ex:JudiciaryCommission .
+
+ex:MilitaryCommission rdf:type go:ParliamentaryCommission .
+ex:MilitaryCommission go:hasName "کمیسیون نظام"@fa .
+
+ex:WarCommission rdf:type go:ParliamentaryCommission .
+ex:WarCommission go:hasName "کمیسیون جنگ"@fa .
+
+ex:JudiciaryCommission rdf:type go:ParliamentaryCommission .
+ex:JudiciaryCommission go:hasName "کمیسیون دادگستری"@fa .
+
+go:hasExclusivePreparationBy rdfs:label "تهیه‌کننده انحصاری"@fa .
+go:isBasedOn rdfs:label "مبتنی بر"@fa .
+
+ex:EmploymentRegulations rdf:type go:LegalEntity ;
+    rdfs:label "مقررات مربوط به استخدام افراد گارد صنعت نفت"@fa ;
+    go:isBasedOn ex:EmploymentRegulationDocument ;
+    go:hasExclusivePreparationBy ex:NationalIranianOilCompany .
+
+ex:EmploymentRegulationDocument rdf:type go:LegalDocument ;
+    rdfs:label "آیین‌نامه استخدام افراد گارد صنعت نفت"@fa .
+
+ex:NationalIranianOilCompany rdf:type go:Organization ;
+    rdfs:label "شرکت ملی نفت ایران"@fa .
+
+go:LegalEntity rdfs:label "هویت حقوقی"@fa .
+go:LegalDocument rdfs:label "سند حقوقی"@fa .
+go:Organization rdfs:label "سازمان"@fa .
+
+
+ex:TrainingRegulations rdf:type go:LegalEntity .
+ex:TrainingRegulations go:hasName "مقررات آموزشی افراد گارد صنعت نفت"@fa .
+ex:TrainingRegulations go:isBasedOn ex:TrainingRegulationDocument .
+ex:TrainingRegulations go:hasExclusivePreparationBy ex:NationalIranianOilCompany .
+
+ex:TrainingRegulationDocument rdf:type go:LegalDocument .
+ex:TrainingRegulationDocument go:hasName "آیین‌نامه آموزشی افراد گارد صنعت نفت"@fa .
+
+ex:NationalIranianOilCompany rdf:type go:Organization .
+ex:NationalIranianOilCompany go:hasName "شرکت ملی نفت ایران"@fa .
+
+
+ex:OilIndustryGuard go:HasDuty ex:DutyPerformanceAccordingToRegulations .
+ex:DutyPerformanceAccordingToRegulations rdf:type go:Event .
+ex:DutyPerformanceAccordingToRegulations go:HasTheme ex:RegulationByNIOC .
+ex:RegulationByNIOC rdf:type go:Regulation .
+ex:RegulationByNIOC go:CreatedBy ex:NIOC .
+ex:NIOC rdf:type go:Organization .
+ex:NIOC rdfs:label "شرکت ملی نفت ایران" .
+ex:OilIndustryGuard rdf:type go:Entity .
+ex:OilIndustryGuard rdfs:label "افراد گارد صنعت نفت" .
+ex:EmploymentRegulations rdf:type go:LegalEntity .
+ex:EmploymentRegulations go:hasName "مقررات مربوط به استخدام افراد گارد صنعت نفت"@fa .
+ex:EmploymentRegulations go:isBasedOn ex:EmploymentRegulationDocument .
+ex:EmploymentRegulations go:hasExclusivePreparationBy ex:NationalIranianOilCompany .
+
+ex:EmploymentRegulationDocument rdf:type go:LegalDocument .
+ex:EmploymentRegulationDocument go:hasName "آیین‌نامه استخدام افراد گارد صنعت نفت"@fa .
+
+ex:NationalIranianOilCompany rdf:type go:Organization .
+ex:NationalIranianOilCompany go:hasName "شرکت ملی نفت ایران"@fa .
+
+ex:OilIndustryGuard go:SubjectTo ex:CriminalRules .
+ex:CriminalRules rdf:type go:Regulation .
+ex:CriminalRules go:BasedOn ex:MilitaryLawsAndRegulations .
+ex:MilitaryLawsAndRegulations rdf:type go:Regulation .
+ex:MilitaryLawsAndRegulations rdfs:label "قوانین و آیین‌نامه‌های نیروهای مسلح شاهنشاهی" .
+ex:OilIndustryGuard rdf:type go:Entity .
+ex:OilIndustryGuard rdfs:label "افراد گارد صنعت نفت" .
+
+ex:OilIndustryGuard go:SubjectTo ex:CriminalRules .
+ex:CriminalRules rdf:type go:Regulation .
+ex:CriminalRules go:BasedOn ex:MilitaryLawsAndRegulations .
+ex:MilitaryLawsAndRegulations rdf:type go:Regulation .
+ex:MilitaryLawsAndRegulations rdfs:label "قوانین و آیین‌نامه‌های نیروهای مسلح شاهنشاهی" .
+ex:OilIndustryGuard rdf:type go:Entity .
+ex:OilIndustryGuard rdfs:label "افراد گارد صنعت نفت" .
