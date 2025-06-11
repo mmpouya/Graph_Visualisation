@@ -228,11 +228,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearGraphBtn = document.getElementById('clearGraphBtn');
     const zoomInBtn = document.getElementById('zoomInBtn');
     const zoomOutBtn = document.getElementById('zoomOutBtn');
-    const toggleGridBtn = document.getElementById('toggleGridBtn');
     const helpButton = document.getElementById('helpButton');
     const helpModal = document.getElementById('helpModal');
     const closeHelpModal = document.getElementById('closeHelpModal');
-    const graphGrid = document.getElementById('graphGrid');
     const movingBg = document.getElementById('movingBg');
 
     if (!chartDom) {
@@ -326,20 +324,6 @@ document.addEventListener('DOMContentLoaded', () => {
             option.legend.data = [];
             myChart.setOption(option, true);
             showNotification('Graph cleared.', 'info');
-        });
-    }
-
-    // --- Grid Overlay ---
-    if (graphGrid && toggleGridBtn) {
-        // SVG grid pattern
-        const gridSVG = `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="smallGrid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#fff" stroke-width="1.2"/></pattern></defs><rect width="100%" height="100%" fill="url(#smallGrid)"/></svg>`;
-        graphGrid.innerHTML = gridSVG;
-        toggleGridBtn.addEventListener('click', () => {
-            if (graphGrid.style.display === 'none' || !graphGrid.style.display) {
-                graphGrid.style.display = 'block';
-            } else {
-                graphGrid.style.display = 'none';
-            }
         });
     }
 
