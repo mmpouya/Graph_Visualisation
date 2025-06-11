@@ -5,28 +5,141 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TTL Graph Visualizer</title>
     <style>
-        body { font-family: sans-serif; margin: 20px; }
-        #main { width: 100%; height: 70vh; border: 1px solid #ccc; margin-top: 20px; }
-        .controls { margin-bottom: 20px; }
-        .controls > * { margin-right: 10px; }
-        #fileNameDisplay { font-style: italic; color: #555; }
+        /* General Body Styling */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        /* Main Application Container */
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 900px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1c1e21;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        /* Controls Section */
+        .controls {
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        /* Visually Hidden File Input */
+        #fileInput {
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            position: absolute;
+            z-index: -1;
+        }
+
+        /* Styled Label for File Input */
+        .file-input-label {
+            background-color: #e4e6eb;
+            color: #1c1e21;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .file-input-label:hover {
+            background-color: #d8dbdf;
+        }
+        
+        #fileNameDisplay {
+            font-style: italic;
+            color: #606770;
+            min-height: 20px; /* Prevents layout shift */
+        }
+
+        /* Primary Action Button */
+        #loadButton {
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #loadButton:hover {
+            background-color: #166fe5;
+        }
+        
+        /* Graph Display Area */
+        #main {
+            width: 100%;
+            height: 70vh;
+            border: 1px solid #dddfe2;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #main p {
+            color: #8a8d91;
+            font-size: 1.1em;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.0/echarts.min.js"></script>
     <script src="https://unpkg.com/n3/browser/n3.min.js"></script>
 </head>
 <body>
-    <h1>Interactive TTL Graph Visualizer</h1>
 
-    <div class="controls">
-        <input type="file" id="fileInput" accept=".ttl, text/turtle">
-        <button id="loadButton">Load TTL File and Visualize</button>
-        <span id="fileNameDisplay">No file selected.</span>
+    <div class="container">
+        <h1>Interactive TTL Graph Visualizer</h1>
+
+        <div class="controls">
+            <input type="file" id="fileInput" accept=".ttl, text/turtle">
+            <label for="fileInput" class="file-input-label">Choose a TTL File</label>
+            <span id="fileNameDisplay">No file selected.</span>
+            <button id="loadButton">Visualize Graph</button>
+        </div>
+
+        <div id="main">
+            <p>Select a .ttl file and click "Visualize" to see the graph.</p>
+        </div>
     </div>
 
-    <div id="main">
-        <p style="padding: 20px;">Please select a TTL file and click the "Load" button to display the graph.</p>
-    </div>
-
+    <script>
+        // JavaScript to display the selected file name
+        const fileInput = document.getElementById('fileInput');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files.length > 0) {
+                fileNameDisplay.textContent = fileInput.files[0].name;
+            } else {
+                fileNameDisplay.textContent = 'No file selected.';
+            }
+        });
+    </script>
     <script src="importGraphOnJs_2.js"></script> 
-    </body>
+</body>
 </html>
