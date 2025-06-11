@@ -131,6 +131,54 @@
             position: relative;
         }
 
+        /* Stats Display */
+        #statsDisplay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px 8px 0 0;
+            padding: 12px;
+            margin: 0;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+        .stats-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .stats-item {
+            flex: 1;
+            padding: 4px 8px;
+            background: rgba(0,0,0,0.03);
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stats-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-right: 8px;
+        }
+        .stats-value {
+            color: #333;
+            font-weight: 500;
+        }
+        .stats-progress {
+            color: #666;
+            font-size: 0.85em;
+            margin-left: 4px;
+        }
+
         #main p {
             color: #8a8d91;
             font-size: 1.1em;
@@ -273,6 +321,7 @@
             <div id="echartsContainer" style="width:100%; height:100%;"></div>
             <div id="movingBg" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0.1; pointer-events:none;"></div>
             <div class="graph-placeholder" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#8a8d91; font-size:1.1em; z-index:0; pointer-events:none;">Load a TTL file to visualize your graph here.</div>
+            <div id="statsDisplay"></div>
         </div>
         <div id="notificationArea"></div>
     </div>

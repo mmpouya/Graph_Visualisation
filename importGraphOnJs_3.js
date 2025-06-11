@@ -1,6 +1,63 @@
 // ECharts and N3.js must be loaded via <script> tags in HTML first.
 // The myChart variable will be initialized in the HTML file.
 
+// Add stats display styles
+const statsStyles = `
+    .stats-container {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 8px 8px 0 0;
+        padding: 12px;
+        margin: 0;
+        box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+        border-top: 1px solid rgba(0,0,0,0.1);
+    }
+    .stats-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+    .stats-row:last-child {
+        margin-bottom: 0;
+    }
+    .stats-item {
+        flex: 1;
+        padding: 4px 8px;
+        background: rgba(0,0,0,0.03);
+        border-radius: 4px;
+        margin: 0 4px;
+        text-align: center;
+    }
+    .stats-label {
+        color: #666;
+        font-size: 0.9em;
+        margin-right: 8px;
+    }
+    .stats-value {
+        color: #333;
+        font-weight: 500;
+    }
+    .stats-progress {
+        color: #666;
+        font-size: 0.85em;
+        margin-left: 4px;
+    }
+`;
+
+// Add styles to document
+if (!document.getElementById('statsStyles')) {
+    const styleSheet = document.createElement('style');
+    styleSheet.id = 'statsStyles';
+    styleSheet.textContent = statsStyles;
+    document.head.appendChild(styleSheet);
+}
+
 // Utility function: generate a random hex color.
 function getRandomColor() {
     return '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
@@ -92,7 +149,6 @@ function showNotification(message, type = 'info', duration = 3500) {
     notif.style.marginBottom = '10px';
     notif.style.borderRadius = '6px';
     notif.style.boxShadow = '0 2px 8px rgba(0,0,0,0.07)';
-    notif.style.fontSize = '1em';
     notif.style.opacity = '0.98';
     notif.style.transition = 'opacity 0.4s';
     area.appendChild(notif);
@@ -218,6 +274,9 @@ function applyFilters() {
     option.series[0].links = filteredLinks;
     myChart.setOption(option);
     
+    // Update stats display
+    updateStatsDisplay();
+    
     // Update file info display
     const fileInfoDisplay = document.getElementById('fileInfoDisplay');
     if (fileInfoDisplay) {
@@ -265,6 +324,9 @@ function loadMoreNodes() {
     option.series[0].data = [...currentNodes, ...newNodes];
     option.series[0].links = [...currentLinks, ...newLinks];
     myChart.setOption(option);
+    
+    // Update stats display
+    updateStatsDisplay();
     
     // Update file info display
     const fileInfoDisplay = document.getElementById('fileInfoDisplay');
@@ -392,6 +454,9 @@ async function loadAndVisualizeGraph() {
                         // Initialize filter controls
                         initializeFilterControls();
                         
+                        // Update stats display
+                        updateStatsDisplay();
+                        
                         showNotification(`Loaded initial ${initialNodes.length} nodes and ${initialLinks.length} links. Use "Load More" to see more.`, 'success');
                         
                     } catch (transformError) {
@@ -433,6 +498,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const helpModal = document.getElementById('helpModal');
     const closeHelpModal = document.getElementById('closeHelpModal');
     const movingBg = document.getElementById('movingBg');
+
+    // Ensure stats container exists and is properly positioned
+    let statsDisplay = document.getElementById('statsDisplay');
+    if (!statsDisplay) {
+        statsDisplay = document.createElement('div');
+        statsDisplay.id = 'statsDisplay';
+        if (chartDom) {
+            chartDom.style.position = 'relative'; // Ensure parent has relative positioning
+            chartDom.appendChild(statsDisplay);
+        }
+    }
 
     if (!chartDom) {
         showNotification("ECharts container element not found.", 'error');
@@ -808,4 +884,64 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // The loadAndVisualizeGraph() and registerEventHandlers() functions
   // will be called from the HTML file, after myChart is initialized.
+  
+function updateStatsDisplay() {
+    const statsDisplay = document.getElementById('statsDisplay');
+    if (!statsDisplay || !originalGraphData) return;
+
+    const currentNodes = option.series[0].data;
+    const currentLinks = option.series[0].links;
+    const totalNodes = originalGraphData.nodes.length;
+    const totalLinks = originalGraphData.links.length;
+    
+    // Calculate average degree
+    const nodeDegrees = new Map();
+    currentLinks.forEach(link => {
+        nodeDegrees.set(link.source, (nodeDegrees.get(link.source) || 0) + 1);
+        nodeDegrees.set(link.target, (nodeDegrees.get(link.target) || 0) + 1);
+    });
+    const avgDegree = currentNodes.length > 0 
+        ? (Array.from(nodeDegrees.values()).reduce((a, b) => a + b, 0) / currentNodes.length).toFixed(2)
+        : 0;
+
+    // Calculate graph density
+    const maxPossibleEdges = (currentNodes.length * (currentNodes.length - 1)) / 2;
+    const density = maxPossibleEdges > 0 ? (currentLinks.length / maxPossibleEdges).toFixed(4) : 0;
+
+    // Calculate loading progress
+    const loadingProgress = totalNodes > 0 ? ((currentNodes.length / totalNodes) * 100).toFixed(1) : 0;
+
+    // Get number of categories
+    const numCategories = option.series[0].categories ? option.series[0].categories.length : 0;
+
+    statsDisplay.innerHTML = `
+        <div class="stats-container">
+            <div class="stats-row">
+                <div class="stats-item">
+                    <span class="stats-label">Nodes:</span>
+                    <span class="stats-value">${currentNodes.length} / ${totalNodes}</span>
+                    <span class="stats-progress">(${loadingProgress}%)</span>
+                </div>
+                <div class="stats-item">
+                    <span class="stats-label">Edges:</span>
+                    <span class="stats-value">${currentLinks.length} / ${totalLinks}</span>
+                </div>
+            </div>
+            <div class="stats-row">
+                <div class="stats-item">
+                    <span class="stats-label">Categories:</span>
+                    <span class="stats-value">${numCategories}</span>
+                </div>
+                <div class="stats-item">
+                    <span class="stats-label">Avg. Degree:</span>
+                    <span class="stats-value">${avgDegree}</span>
+                </div>
+                <div class="stats-item">
+                    <span class="stats-label">Density:</span>
+                    <span class="stats-value">${density}</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
   
