@@ -113,17 +113,44 @@
 <body>
 
     <div class="container">
-        <h1>Interactive TTL Graph Visualizer</h1>
+        <h1>Interactive TTL Graph Visualizer
+            <button id="helpButton" aria-label="Show help/instructions" style="float:right;font-size:20px;background:none;border:none;cursor:pointer;">❓</button>
+        </h1>
 
-        <div class="controls">
-            <input type="file" id="fileInput" accept=".ttl, text/turtle">
-            <label for="fileInput" class="file-input-label">Choose a TTL File</label>
+        <div class="controls" aria-label="File controls">
+            <input type="file" id="fileInput" accept=".ttl, text/turtle" aria-label="Choose TTL file">
+            <label for="fileInput" class="file-input-label" tabindex="0">Choose a TTL File</label>
+            <span id="fileInfoDisplay" aria-live="polite" style="font-size:0.95em;color:#888;"></span>
             <span id="fileNameDisplay">No file selected.</span>
-            <button id="loadButton">Visualize Graph</button>
+            <button id="loadButton" disabled>Visualize Graph</button>
         </div>
 
-        <div id="main">
+        <div class="graph-controls" style="margin-bottom:20px;display:flex;gap:10px;justify-content:center;">
+            <button id="resetZoomBtn" aria-label="Reset Zoom">🔄 Reset Zoom</button>
+            <button id="fitViewBtn" aria-label="Fit Graph to View">🗺️ Fit to View</button>
+            <button id="clearGraphBtn" aria-label="Clear Graph">🧹 Clear Graph</button>
+        </div>
+
+        <div id="main" aria-label="Graph visualization area">
             <p>Select a .ttl file and click "Visualize" to see the graph.</p>
+        </div>
+
+        <div id="notificationArea" aria-live="polite" style="position:fixed;top:30px;right:30px;z-index:9999;"></div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);z-index:10000;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:30px 40px;border-radius:10px;max-width:500px;box-shadow:0 8px 32px rgba(0,0,0,0.2);position:relative;">
+            <button id="closeHelpModal" aria-label="Close help" style="position:absolute;top:10px;right:10px;font-size:20px;background:none;border:none;cursor:pointer;">✖️</button>
+            <h2 style="margin-top:0;">How to Use</h2>
+            <ul style="text-align:left;">
+                <li>Click <b>Choose a TTL File</b> and select a Turtle (.ttl) file from your computer.</li>
+                <li>Click <b>Visualize Graph</b> to load and display the graph.</li>
+                <li>Use <b>Reset Zoom</b>, <b>Fit to View</b>, and <b>Clear Graph</b> for graph navigation.</li>
+                <li>Drag nodes to reposition and double-click nodes to expand/collapse resources.</li>
+                <li>Hover over nodes/edges for details. Categories are color-coded.</li>
+            </ul>
+            <p style="font-size:0.95em;color:#888;">TTL (Turtle) is a text-based RDF serialization format for representing graphs.</p>
         </div>
     </div>
 
