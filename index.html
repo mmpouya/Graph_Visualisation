@@ -231,32 +231,31 @@
 <body>
 
     <div class="container">
-        <h1>Interactive TTL Graph Visualizer
-            <button id="helpButton" aria-label="Show help/instructions" style="float:right;font-size:20px;background:none;border:none;cursor:pointer;">❓</button>
-        </h1>
-
-        <div class="controls" aria-label="File controls">
-            <input type="file" id="fileInput" accept=".ttl, text/turtle" aria-label="Choose TTL file">
-            <label for="fileInput" class="file-input-label" tabindex="0">Choose a TTL File</label>
-            <span id="fileInfoDisplay" aria-live="polite" style="font-size:0.95em;color:#888;"></span>
-            <span id="fileNameDisplay">No file selected.</span>
-            <button id="loadButton" disabled>Visualize Graph</button>
+        <div class="header-bar" style="display:flex;flex-direction:column;align-items:flex-start;margin-bottom:0;">
+            <div style="display:flex;align-items:center;width:100%;">
+                <h1 style="font-size:1.7em;margin:0 0 0 0;">Interactive TTL Graph Visualizer</h1>
+                <button id="helpButton" aria-label="Show help/instructions" style="margin-left:10px;font-size:20px;background:none;border:none;cursor:pointer;">❓</button>
+            </div>
+            <div class="file-controls" style="display:flex;align-items:center;gap:10px;margin-top:10px;margin-bottom:0;">
+                <input type="file" id="fileInput" accept=".ttl, text/turtle" aria-label="Choose TTL file">
+                <label for="fileInput" class="file-input-label" tabindex="0">Choose a TTL File</label>
+                <span id="fileInfoDisplay" aria-live="polite"></span>
+                <span id="fileNameDisplay">No file selected.</span>
+                <button id="loadButton" disabled>Visualize Graph</button>
+            </div>
         </div>
-
-        <div class="graph-controls" style="margin-bottom:20px;display:flex;gap:10px;justify-content:center;">
-            <button id="resetZoomBtn" aria-label="Reset Zoom">🔄 Reset Zoom</button>
-            <button id="fitViewBtn" aria-label="Fit Graph to View">🗺️ Fit to View</button>
-            <button id="clearGraphBtn" aria-label="Clear Graph">🧹 Clear Graph</button>
-            <button id="zoomInBtn" aria-label="Zoom In">➕ Zoom In</button>
-            <button id="zoomOutBtn" aria-label="Zoom Out">➖ Zoom Out</button>
-        </div>
-
-        <div id="main" aria-label="Graph visualization area">
+        <div class="graph-area" style="position:relative;width:100%;min-width:320px;height:70vh;border:1.5px solid #dddfe2;border-radius:12px;background:#f7f8fa;margin-bottom:18px;margin-top:0;display:flex;flex-direction:column;justify-content:flex-start;">
+            <div class="graph-controls" style="position:absolute;top:12px;right:18px;display:flex;gap:10px;z-index:10;">
+                <button id="resetZoomBtn" aria-label="Reset Zoom">🔄</button>
+                <button id="fitViewBtn" aria-label="Fit Graph to View">🗺️</button>
+                <button id="clearGraphBtn" aria-label="Clear Graph">🧹</button>
+                <button id="zoomInBtn" aria-label="Zoom In">➕</button>
+                <button id="zoomOutBtn" aria-label="Zoom Out">➖</button>
+            </div>
             <div id="echartsContainer" style="width:100%; height:100%;"></div>
             <div id="movingBg" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0.1; pointer-events:none;"></div>
-            <p style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index: -1;">Load a TTL file to visualize your graph here.</p>
+            <div class="graph-placeholder" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#8a8d91; font-size:1.1em; z-index:0; pointer-events:none;">Load a TTL file to visualize your graph here.</div>
         </div>
-
         <div id="notificationArea"></div>
     </div>
 
