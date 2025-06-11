@@ -4,14 +4,24 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+# Class definitions with Farsi labels
 
-ex:EmploymentRegulations rdf:type go:LegalEntity .
-ex:EmploymentRegulations go:hasName "مقررات مربوط به استخدام افراد گارد صنعت نفت"@fa .
-ex:EmploymentRegulations go:isBasedOn ex:EmploymentRegulationDocument .
-ex:EmploymentRegulations go:hasExclusivePreparationBy ex:NationalIranianOilCompany .
 
-ex:EmploymentRegulationDocument rdf:type go:LegalDocument .
-ex:EmploymentRegulationDocument go:hasName "آیین‌نامه استخدام افراد گارد صنعت نفت"@fa .
+# Property definitions with Farsi labels
+go:hasExclusivePreparationBy rdfs:label "تهیه‌کننده انحصاری"@fa .
+go:isBasedOn rdfs:label "مبتنی بر"@fa .
 
-ex:NationalIranianOilCompany rdf:type go:Organization .
-ex:NationalIranianOilCompany go:hasName "شرکت ملی نفت ایران"@fa .
+ex:EmploymentRegulations rdf:type go:LegalEntity ;
+    rdfs:label "مقررات مربوط به استخدام افراد گارد صنعت نفت"@fa ;
+    go:isBasedOn ex:EmploymentRegulationDocument ;
+    go:hasExclusivePreparationBy ex:NationalIranianOilCompany .
+
+ex:EmploymentRegulationDocument rdf:type go:LegalDocument ;
+    rdfs:label "آیین‌نامه استخدام افراد گارد صنعت نفت"@fa .
+
+ex:NationalIranianOilCompany rdf:type go:Organization ;
+    rdfs:label "شرکت ملی نفت ایران"@fa .
+
+go:LegalEntity rdfs:label "هویت حقوقی"@fa .
+go:LegalDocument rdfs:label "سند حقوقی"@fa .
+go:Organization rdfs:label "سازمان"@fa .

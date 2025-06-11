@@ -318,6 +318,8 @@
                 const randomFilePath = ttlFiles[randomIdx];
                 fileNameDisplay.textContent = `Random: ${randomFilePath.split('/').pop()}`;
                 fileInfoDisplay.textContent = '';
+                // Hide the placeholder when loading random graph
+                document.querySelector('.graph-placeholder').style.display = 'none';
                 if (window.myChart && window.myChart.showLoading) {
                     window.myChart.showLoading({ text: `Loading and parsing: ${randomFilePath}...`, color: '#5470c6', textColor: '#333', maskColor: 'rgba(255,255,255,0.8)', zlevel: 0 });
                 }
@@ -378,6 +380,6 @@
             });
         }
     </script>
-    <script src="importGraphOnJs_2.js"></script> 
+    <script src="importGraphOnJs_3.js"></script> 
 </body>
 </html> 

@@ -8,23 +8,41 @@
 ex:GuardOfOilIndustry rdf:type go:Organization .
 ex:GuardOfOilIndustry go:hasName "گارد صنعت نفت"@fa .
 ex:GuardOfOilIndustry go:hasPurpose ex:ProtectionPurpose .
+ex:GuardOfOilIndustry rdfs:label "گارد صنعت نفت"@fa .
 
 ex:ProtectionPurpose rdf:type go:Purpose .
 ex:ProtectionPurpose go:hasTheme ex:OilIndustryAssets .
 ex:ProtectionPurpose go:hasAgent ex:GuardOfOilIndustry .
+ex:ProtectionPurpose rdfs:label "هدف حفاظت"@fa .
 
 ex:OilIndustryAssets rdf:type go:AssetCollection .
 ex:OilIndustryAssets go:isPartOf ex:NationalIranianOilCompany .
 ex:OilIndustryAssets go:includes ex:OilFacilities, ex:OilDocuments, ex:OilProperties .
+ex:OilIndustryAssets rdfs:label "دارایی‌های صنعت نفت"@fa .
 
 ex:NationalIranianOilCompany rdf:type go:Organization .
 ex:NationalIranianOilCompany go:hasName "شرکت ملی نفت ایران"@fa .
+ex:NationalIranianOilCompany rdfs:label "شرکت ملی نفت ایران"@fa .
 
 ex:FormationEvent rdf:type go:Event .
 ex:FormationEvent go:hasAgent ex:NationalIranianOilCompany .
 ex:FormationEvent go:hasTheme ex:GuardOfOilIndustry .
 ex:FormationEvent go:hasLegalBasis ex:LegalRequirement .
+ex:FormationEvent rdfs:label "رویداد تشکیل"@fa .
 
 ex:LegalRequirement rdf:type go:LegalEntity .
 ex:LegalRequirement go:hasDescription "الزام قانونی"@fa .
+ex:LegalRequirement rdfs:label "الزام قانونی"@fa .
+
+ex:OilFacilities rdfs:label "تأسیسات نفتی"@fa .
+ex:OilDocuments rdfs:label "اسناد نفتی"@fa .
+ex:OilProperties rdfs:label "اموال نفتی"@fa .
+
+go:hasPurpose rdfs:label "هدف"@fa .
+go:hasTheme rdfs:label "موضوع"@fa .
+go:hasAgent rdfs:label "عامل"@fa .
+go:isPartOf rdfs:label "جزئی از"@fa .
+go:includes rdfs:label "شامل"@fa .
+go:hasLegalBasis rdfs:label "مبنای قانونی"@fa .
+go:hasDescription rdfs:label "توضیح"@fa .
 

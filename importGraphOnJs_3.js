@@ -144,7 +144,7 @@ async function loadAndVisualizeGraph() {
         let parsingError = null;
 
         // --- Detect OWL type by prefix ---
-        let graphType = 'Unknown';
+        let graphType = 'Classes';
         if (/^[ \t]*(@prefix|prefix)[ \t]+/im.test(ttlData)) {
             graphType = 'OWL';
         }
@@ -510,22 +510,30 @@ document.addEventListener('DOMContentLoaded', () => {
       const typePredicate = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
       const typeQuads = store.getQuads(term, typePredicate, null, null);
       if (typeQuads.length > 0) {
-          // Use the local part of the first rdf:type as category
+          // Get the type URI
           const typeUri = typeQuads[0].object.value;
-          let categoryName = getTermNameFunc(typeQuads[0].object); // Use the prefixed name if possible
-          // Fallback for very long URIs if no prefix matches
+          
+          // Try to get the Farsi label for this type
+          const labelQuads = store.getQuads(typeQuads[0].object, 'http://www.w3.org/2000/01/rdf-schema#label', null, null);
+          if (labelQuads.length > 0) {
+              // Use the Farsi label if available
+              return labelQuads[0].object.value;
+          }
+          
+          // Fallback to prefixed name if no label found
+          let categoryName = getTermNameFunc(typeQuads[0].object);
           if (categoryName === typeUri && typeUri.includes('/')) categoryName = typeUri.substring(typeUri.lastIndexOf('/') + 1);
           if (categoryName === typeUri && typeUri.includes('#')) categoryName = typeUri.substring(typeUri.lastIndexOf('#') + 1);
           return categoryName;
       }
-      return 'Unknown'; // Default category
+      return 'Classes'; // Default category
   }
   
   function extractCategories(nodes) {
       const categorySet = new Set();
       nodes.forEach(node => {
           if (node.category) categorySet.add(node.category);
-          else categorySet.add('Unknown');
+          else categorySet.add('Classes');
       });
       return Array.from(categorySet).map(catName => ({ name: catName, itemStyle: { color: getRandomColor() } }));
   }

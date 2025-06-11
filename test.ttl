@@ -50,3 +50,4 @@ go:isPartOf rdfs:label "جزئی از"@fa .
 go:includes rdfs:label "شامل"@fa .
 go:hasLegalBasis rdfs:label "مبنای قانونی"@fa .
 go:hasDescription rdfs:label "توضیح"@fa .
+go:Event rdfs:label "رخداد"@fa .

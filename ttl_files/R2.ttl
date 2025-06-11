@@ -6,23 +6,38 @@
 
 ex:GuardOfOilIndustry rdf:type go:Organization .
 ex:GuardOfOilIndustry go:hasMember ex:GuardPersonnel .
+ex:GuardOfOilIndustry rdfs:label "گارد صنعت نفت"@fa .
 
 ex:GuardPersonnel rdf:type go:PersonGroup .
 ex:GuardPersonnel go:hasRole ex:MilitaryOfficerRole .
 ex:GuardPersonnel go:hasDuty ex:WatchDuty .
+ex:GuardPersonnel rdfs:label "پرسنل گارد"@fa .
 
 ex:WatchDuty rdf:type go:Duty .
 ex:WatchDuty go:isPerformedDuring ex:GuardingEvent .
 ex:WatchDuty go:hasAssociatedResponsibility ex:MilitaryOfficerResponsibilities .
+ex:WatchDuty rdfs:label "وظیفه نگهبانی"@fa .
 
 ex:GuardingEvent rdf:type go:Event .
 ex:GuardingEvent go:hasAgent ex:GuardPersonnel .
+ex:GuardingEvent rdfs:label "رویداد نگهبانی"@fa .
 
 ex:MilitaryOfficerRole rdf:type go:Role .
 ex:MilitaryOfficerRole go:hasLegalBasis ex:LegalRequirement .
+ex:MilitaryOfficerRole rdfs:label "نقش افسر نظامی"@fa .
 
 ex:MilitaryOfficerResponsibilities rdf:type go:ResponsibilityCollection .
 ex:MilitaryOfficerResponsibilities go:hasDescription "وظایف، اختیارات و مسئولیت‌های ضابطین نظامی"@fa .
+ex:MilitaryOfficerResponsibilities rdfs:label "مسئولیت‌های افسر نظامی"@fa .
 
 ex:LegalRequirement rdf:type go:LegalEntity .
 ex:LegalRequirement go:hasDescription "الزام قانونی"@fa .
+ex:LegalRequirement rdfs:label "الزام قانونی"@fa .
+
+go:hasMember rdfs:label "عضو"@fa .
+go:hasRole rdfs:label "نقش"@fa .
+go:hasDuty rdfs:label "وظیفه"@fa .
+go:isPerformedDuring rdfs:label "انجام می‌شود در"@fa .
+go:hasAssociatedResponsibility rdfs:label "مسئولیت مرتبط"@fa .
+go:hasAgent rdfs:label "عامل"@fa .
+go:hasLegalBasis rdfs:label "مبنای قانونی"@fa .
