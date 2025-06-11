@@ -205,7 +205,7 @@ async function loadAndVisualizeGraph() {
 
 // --- Initialization logic (should be at the end of your script or in a DOMContentLoaded listener) ---
 document.addEventListener('DOMContentLoaded', () => {
-    const chartDom = document.getElementById('main');
+    const chartDom = document.getElementById('echartsContainer') || document.getElementById('main');
     const fileInput = document.getElementById('fileInput');
     const loadButton = document.getElementById('loadButton');
     const fileNameDisplay = document.getElementById('fileNameDisplay');
@@ -213,12 +213,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetZoomBtn = document.getElementById('resetZoomBtn');
     const fitViewBtn = document.getElementById('fitViewBtn');
     const clearGraphBtn = document.getElementById('clearGraphBtn');
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const toggleGridBtn = document.getElementById('toggleGridBtn');
     const helpButton = document.getElementById('helpButton');
     const helpModal = document.getElementById('helpModal');
     const closeHelpModal = document.getElementById('closeHelpModal');
+    const graphGrid = document.getElementById('graphGrid');
+    const movingBg = document.getElementById('movingBg');
 
     if (!chartDom) {
-        showNotification("ECharts container element with ID 'main' not found.", 'error');
+        showNotification("ECharts container element not found.", 'error');
         return;
     }
     if (!fileInput || !loadButton || !fileNameDisplay) {
@@ -271,13 +276,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Graph Controls ---
+    let currentZoom = 1;
+    function setZoom(zoom) {
+        currentZoom = Math.max(0.2, Math.min(zoom, 3));
+        chartDom.style.transform = `scale(${currentZoom})`;
+        chartDom.style.transformOrigin = 'center center';
+    }
+    if (zoomInBtn) {
+        zoomInBtn.addEventListener('click', () => {
+            setZoom(currentZoom + 0.1);
+        });
+    }
+    if (zoomOutBtn) {
+        zoomOutBtn.addEventListener('click', () => {
+            setZoom(currentZoom - 0.1);
+        });
+    }
     if (resetZoomBtn) {
         resetZoomBtn.addEventListener('click', () => {
+            setZoom(1);
             if (myChart) myChart.dispatchAction({ type: 'restore' });
         });
     }
     if (fitViewBtn) {
         fitViewBtn.addEventListener('click', () => {
+            setZoom(1);
             if (myChart) myChart.resize();
         });
     }
@@ -290,6 +313,34 @@ document.addEventListener('DOMContentLoaded', () => {
             myChart.setOption(option, true);
             showNotification('Graph cleared.', 'info');
         });
+    }
+
+    // --- Grid Overlay ---
+    if (graphGrid && toggleGridBtn) {
+        // SVG grid pattern
+        const gridSVG = `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="smallGrid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#fff" stroke-width="1.2"/></pattern></defs><rect width="100%" height="100%" fill="url(#smallGrid)"/></svg>`;
+        graphGrid.innerHTML = gridSVG;
+        toggleGridBtn.addEventListener('click', () => {
+            if (graphGrid.style.display === 'none' || !graphGrid.style.display) {
+                graphGrid.style.display = 'block';
+            } else {
+                graphGrid.style.display = 'none';
+            }
+        });
+    }
+
+    // --- Moving Background ---
+    if (movingBg) {
+        movingBg.style.background = 'linear-gradient(120deg, #f0f2f5 0%, #e0e7ef 100%)';
+        movingBg.style.backgroundSize = '200% 200%';
+        movingBg.style.animation = 'moveBgAnim 8s linear infinite';
+        // Add keyframes via JS if not present
+        if (!document.getElementById('moveBgAnimStyle')) {
+            const style = document.createElement('style');
+            style.id = 'moveBgAnimStyle';
+            style.innerHTML = `@keyframes moveBgAnim { 0% {background-position: 0% 50%;} 100% {background-position: 100% 50%;}}`;
+            document.head.appendChild(style);
+        }
     }
 
     // --- Load Button ---
