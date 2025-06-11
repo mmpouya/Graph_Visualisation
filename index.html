@@ -239,9 +239,10 @@
             <div class="file-controls" style="display:flex;align-items:center;gap:10px;margin-top:10px;margin-bottom:0;">
                 <input type="file" id="fileInput" accept=".ttl, text/turtle" aria-label="Choose TTL file">
                 <label for="fileInput" class="file-input-label" tabindex="0">Choose a TTL File</label>
+                <button id="loadButton" disabled>Visualize Graph</button>
+                <button id="randomGraphBtn" class="file-input-label" style="background:linear-gradient(90deg,#e4e6eb 0%,#f7f8fa 100%);color:#1c1e21;" tabindex="0">Random Graph</button>
                 <span id="fileInfoDisplay" aria-live="polite"></span>
                 <span id="fileNameDisplay">No file selected.</span>
-                <button id="loadButton" disabled>Visualize Graph</button>
             </div>
         </div>
         <div class="graph-area" style="position:relative;width:100%;min-width:320px;height:70vh;border:1.5px solid #dddfe2;border-radius:12px;background:#f7f8fa;margin-bottom:18px;margin-top:0;display:flex;flex-direction:column;justify-content:flex-start;">
@@ -279,7 +280,13 @@
         // JavaScript to display the selected file name
         const fileInput = document.getElementById('fileInput');
         const fileNameDisplay = document.getElementById('fileNameDisplay');
-        
+        const randomGraphBtn = document.getElementById('randomGraphBtn');
+        const fileInfoDisplay = document.getElementById('fileInfoDisplay');
+        const ttlFiles = [
+            'ttl_files/R1.ttl', 'ttl_files/R2.ttl', 'ttl_files/R3.ttl', 'ttl_files/R4.ttl', 'ttl_files/R5.ttl',
+            'ttl_files/R6.ttl', 'ttl_files/R7.ttl', 'ttl_files/R8.ttl', 'ttl_files/R9.ttl', 'ttl_files/R10.ttl',
+            'ttl_files/R11.ttl', 'ttl_files/R12.ttl', 'ttl_files/R13.ttl', 'ttl_files/R14.ttl', 'ttl_files/R15.ttl'
+        ];
         fileInput.addEventListener('change', function() {
             if (fileInput.files.length > 0) {
                 fileNameDisplay.textContent = fileInput.files[0].name;
@@ -287,6 +294,72 @@
                 fileNameDisplay.textContent = 'No file selected.';
             }
         });
+        if (randomGraphBtn) {
+            randomGraphBtn.addEventListener('click', async function() {
+                // Pick a random file
+                const randomIdx = Math.floor(Math.random() * ttlFiles.length);
+                const randomFilePath = ttlFiles[randomIdx];
+                fileNameDisplay.textContent = `Random: ${randomFilePath.split('/').pop()}`;
+                fileInfoDisplay.textContent = '';
+                if (window.myChart && window.myChart.showLoading) {
+                    window.myChart.showLoading({ text: `Loading and parsing: ${randomFilePath}...`, color: '#5470c6', textColor: '#333', maskColor: 'rgba(255,255,255,0.8)', zlevel: 0 });
+                }
+                try {
+                    const response = await fetch(randomFilePath);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const ttlData = await response.text();
+                    if (typeof N3 === 'undefined') throw new Error('N3.js not loaded');
+                    const parser = new N3.Parser();
+                    const store = new N3.Store();
+                    let parsingError = null;
+                    let graphType = 'Unknown';
+                    if (/^[ \t]*(@prefix|prefix)[ \t]+/im.test(ttlData)) graphType = 'OWL';
+                    parser.parse(ttlData, (error, quad, prefixes) => {
+                        if (parsingError) return;
+                        if (error) { parsingError = error; console.error('Error during N3 parsing:', error); return; }
+                        if (quad) { store.addQuad(quad); }
+                        else {
+                            if (window.myChart && window.myChart.hideLoading) window.myChart.hideLoading();
+                            if (parsingError) {
+                                if (window.showNotification) window.showNotification(`Error parsing TTL file '${randomFilePath}':\n${parsingError.message}\n\nCheck console for more details.`, 'error', 6000);
+                                return;
+                            }
+                            if (store.size === 0) {
+                                if (window.showNotification) window.showNotification(`The TTL file '${randomFilePath}' is empty or does not contain any valid triples that could be visualized.`, 'warning', 6000);
+                                if (window.option && window.myChart) {
+                                    window.option.series[0].data = [];
+                                    window.option.series[0].links = [];
+                                    window.option.series[0].categories = [];
+                                    window.option.legend.data = [];
+                                    window.myChart.setOption(window.option, true);
+                                }
+                                fileInfoDisplay.textContent = `Type: ttl | Size: unknown | Graph Type: ${graphType}`;
+                                return;
+                            }
+                            try {
+                                const { nodes, links } = window.transformRdfToEcharts(store, prefixes);
+                                if (window.option && window.myChart) {
+                                    window.option.series[0].data = nodes;
+                                    window.option.series[0].links = links;
+                                    const categories = window.extractCategories(nodes);
+                                    window.option.series[0].categories = categories;
+                                    window.option.legend.data = categories.map(c => c.name);
+                                    window.myChart.setOption(window.option, true);
+                                }
+                                if (window.showNotification) window.showNotification(`Successfully loaded and visualized '${randomFilePath}'.`, 'success', 4000);
+                                fileInfoDisplay.textContent = `Type: ttl | Size: unknown | Graph Type: ${graphType}`;
+                            } catch (transformError) {
+                                if (window.myChart && window.myChart.hideLoading) window.myChart.hideLoading();
+                                if (window.showNotification) window.showNotification(`Error processing graph data from '${randomFilePath}':\n${transformError.message}`, 'error', 6000);
+                            }
+                        }
+                    });
+                } catch (e) {
+                    if (window.myChart && window.myChart.hideLoading) window.myChart.hideLoading();
+                    if (window.showNotification) window.showNotification(`Critical error loading random TTL: ${e.message}`, 'error', 6000);
+                }
+            });
+        }
     </script>
     <script src="importGraphOnJs_3.js"></script> 
 </body>
