@@ -62,7 +62,7 @@ function getRandomColor() {
         },
         force: {
           edgeLength: 200, // Increased for better readability with more nodes
-          repulsion: 1000,  // Increased
+          repulsion: 1200,  // Increased
           gravity: 0.1
         },
         data: [], // Will be populated by loadAndVisualizeGraph
@@ -417,8 +417,12 @@ document.addEventListener('DOMContentLoaded', () => {
               // Add subject node if not already added
               if (!nodeMap.has(subjectId)) {
                   let nodeSymbol = undefined;
+                  let nodeItemStyle = undefined;
+                  let nodeSymbolSize = undefined;
                   if (typeof subjectId === 'string' && subjectId.startsWith('go:')) {
                       nodeSymbol = 'diamond';
+                      nodeItemStyle = { color: '#FFA500' }; // Always orange for diamonds
+                      nodeSymbolSize = 70; // Bigger size for diamonds
                   }
                   nodes.push({
                       id: subjectId,
@@ -427,15 +431,21 @@ document.addEventListener('DOMContentLoaded', () => {
                       properties: {},
                       fixed: false,
                       expanded: false,
-                      ...(nodeSymbol ? { symbol: nodeSymbol } : {})
+                      ...(nodeSymbol ? { symbol: nodeSymbol } : {}),
+                      ...(nodeItemStyle ? { itemStyle: nodeItemStyle } : {}),
+                      ...(nodeSymbolSize ? { symbolSize: nodeSymbolSize } : {})
                   });
                   nodeMap.set(subjectId, nodes[nodes.length - 1]);
               }
               // Add object node if not already added
               if (!nodeMap.has(objectId)) {
                   let nodeSymbol = undefined;
+                  let nodeItemStyle = undefined;
+                  let nodeSymbolSize = undefined;
                   if (typeof objectId === 'string' && objectId.startsWith('go:')) {
                       nodeSymbol = 'diamond';
+                      nodeItemStyle = { color: '#FFA500' }; // Always orange for diamonds
+                      nodeSymbolSize = 70; // Bigger size for diamonds
                   }
                   nodes.push({
                       id: objectId,
@@ -444,7 +454,9 @@ document.addEventListener('DOMContentLoaded', () => {
                       properties: {},
                       fixed: false,
                       expanded: false,
-                      ...(nodeSymbol ? { symbol: nodeSymbol } : {})
+                      ...(nodeSymbol ? { symbol: nodeSymbol } : {}),
+                      ...(nodeItemStyle ? { itemStyle: nodeItemStyle } : {}),
+                      ...(nodeSymbolSize ? { symbolSize: nodeSymbolSize } : {})
                   });
                   nodeMap.set(objectId, nodes[nodes.length - 1]);
               }
