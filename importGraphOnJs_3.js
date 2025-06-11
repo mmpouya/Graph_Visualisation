@@ -103,6 +103,11 @@ function showNotification(message, type = 'info', duration = 3500) {
 }
 
 async function loadAndVisualizeGraph() {
+    // Hide the graph placeholder when visualizing the graph
+    const graphPlaceholder = document.querySelector('.graph-placeholder');
+    if (graphPlaceholder) {
+        graphPlaceholder.style.display = 'none';
+    }
     if (typeof N3 === 'undefined') {
         console.error("N3.js library is not loaded.");
         showNotification("Critical Error: N3.js library is not loaded. Please ensure it's included in your HTML.", 'error');
@@ -382,34 +387,52 @@ document.addEventListener('DOMContentLoaded', () => {
           return term.value; // Should not happen for well-formed RDF terms
       }
   
+      // --- Pass 1: Collect predicates used as edges and edge labels ---
+      const edgePredicates = new Set();
+      const edgeLabels = {};
+      const labelPredicates = ['rdfs:label', 'skos:prefLabel', 'go:hasName', '#label'];
+      store.getQuads().forEach(quad => {
+          // If object is a NamedNode or BlankNode, this is an edge triple
+          if (quad.object.termType === 'NamedNode' || quad.object.termType === 'BlankNode') {
+              edgePredicates.add(getTermName(quad.predicate));
+          }
+      });
+      // Now collect edge labels for those predicates
+      store.getQuads().forEach(quad => {
+          const subjectId = getTermName(quad.subject);
+          const predicateId = getTermName(quad.predicate);
+          if (edgePredicates.has(subjectId) && labelPredicates.some(lp => predicateId.endsWith(lp)) && quad.object.termType === 'Literal') {
+              edgeLabels[subjectId] = quad.object.value;
+          }
+      });
+  
+      // --- Pass 2: Build nodes and links ---
       store.getQuads().forEach(quad => {
           const subjectId = getTermName(quad.subject);
           const predicateId = getTermName(quad.predicate);
           const objectId = getTermName(quad.object);
   
-          // Add subject node if not already added
-          if (!nodeMap.has(subjectId)) {
-              // Determine if this node should be a rhombus (diamond)
-              let nodeSymbol = undefined;
-              if (typeof subjectId === 'string' && subjectId.startsWith('go:')) {
-                  nodeSymbol = 'diamond';
-              }
-              nodes.push({
-                  id: subjectId, // Use URI/blank node ID as ECharts ID
-                  name: subjectId, // Initial name, might be updated by literal
-                  category: guessCategory(quad.subject, store, prefixes, getTermName),
-                  properties: {}, // To store literal properties
-                  fixed: false,
-                  expanded: false,
-                  ...(nodeSymbol ? { symbol: nodeSymbol } : {})
-              });
-              nodeMap.set(subjectId, nodes[nodes.length - 1]);
-          }
-          const subjectNode = nodeMap.get(subjectId);
-  
+          // Only create nodes for subjects and objects in edge triples
           if (quad.object.termType === 'NamedNode' || quad.object.termType === 'BlankNode') {
+              // Add subject node if not already added
+              if (!nodeMap.has(subjectId)) {
+                  let nodeSymbol = undefined;
+                  if (typeof subjectId === 'string' && subjectId.startsWith('go:')) {
+                      nodeSymbol = 'diamond';
+                  }
+                  nodes.push({
+                      id: subjectId,
+                      name: subjectId,
+                      category: guessCategory(quad.subject, store, prefixes, getTermName),
+                      properties: {},
+                      fixed: false,
+                      expanded: false,
+                      ...(nodeSymbol ? { symbol: nodeSymbol } : {})
+                  });
+                  nodeMap.set(subjectId, nodes[nodes.length - 1]);
+              }
+              // Add object node if not already added
               if (!nodeMap.has(objectId)) {
-                  // Determine if this node should be a rhombus (diamond)
                   let nodeSymbol = undefined;
                   if (typeof objectId === 'string' && objectId.startsWith('go:')) {
                       nodeSymbol = 'diamond';
@@ -425,20 +448,24 @@ document.addEventListener('DOMContentLoaded', () => {
                   });
                   nodeMap.set(objectId, nodes[nodes.length - 1]);
               }
+              // Use edge label if available, otherwise use predicateId
+              let edgeLabel = edgeLabels[predicateId] || predicateId;
               links.push({
-                  source: subjectId, // Use ID for source
-                  target: objectId, // Use ID for target
-                  label: { show: true, text: predicateId },
-                  lineStyle: { curveness: Math.random() * 0.2 } // Add some variance if many parallel edges
+                  source: subjectId,
+                  target: objectId,
+                  label: { show: true, text: edgeLabel },
+                  lineStyle: { curveness: Math.random() * 0.2 }
               });
           } else if (quad.object.termType === 'Literal') {
-              // Store literal as a property of the subject node
-              if (!subjectNode.properties) subjectNode.properties = {};
-              subjectNode.properties[predicateId] = objectId; // objectId here is the literal value
-  
-              // If it's a common naming predicate, update the node's display name
-              if (predicateId.endsWith(':hasName') || predicateId.endsWith('#label') || predicateId.endsWith('#label') || predicateId.endsWith('rdfs:label')) {
-                  subjectNode.name = objectId; // Update name to the literal value
+              // Only attach properties to nodes that exist (i.e., not predicates)
+              if (nodeMap.has(subjectId)) {
+                  const subjectNode = nodeMap.get(subjectId);
+                  if (!subjectNode.properties) subjectNode.properties = {};
+                  subjectNode.properties[predicateId] = objectId;
+                  // If it's a common naming predicate, update the node's display name
+                  if (predicateId.endsWith(':hasName') || predicateId.endsWith('#label') || predicateId.endsWith('rdfs:label')) {
+                      subjectNode.name = objectId;
+                  }
               }
           }
       });
@@ -446,23 +473,20 @@ document.addEventListener('DOMContentLoaded', () => {
       // Post-process names if a display name was preferred but ID is different
       nodes.forEach(node => {
           if (node.name !== node.id && node.properties) {
-               // Check if an explicit name was set that is different from its ID
-               // If the name property itself is the ID, but we have a label from properties, prefer that.
-              let potentialName = node.id; // fallback
-              const namePredicates = ['rdfs:label', 'go:hasName', 'skos:prefLabel']; // Add more as needed
+              let potentialName = node.id;
+              const namePredicates = ['rdfs:label', 'go:hasName', 'skos:prefLabel'];
               for(const p of namePredicates) {
                   if(node.properties[p]) {
                       potentialName = node.properties[p];
                       break;
                   }
               }
-              // To make it more readable if the ID is a long URI
               if (node.name === node.id && potentialName !== node.id) {
-                   node.name = `${potentialName} (${node.id.split('/').pop().split('#').pop()})`;
+                  node.name = `${potentialName} (${node.id.split('/').pop().split('#').pop()})`;
               } else {
-                   node.name = node.name; // Already set or no better alternative
+                  node.name = node.name;
               }
-          } else if (node.name === node.id) { // if name is still the full ID, try to shorten it
+          } else if (node.name === node.id) {
               node.name = node.id.split('/').pop().split('#').pop();
           }
       });
