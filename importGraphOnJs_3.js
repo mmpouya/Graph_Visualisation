@@ -36,6 +36,7 @@ function getRandomColor() {
       {
         type: 'graph',
         layout: 'force',
+        roam: true, // Enable built-in zoom/pan
         draggable: true,
         label: {
           show: true,
@@ -137,6 +138,12 @@ async function loadAndVisualizeGraph() {
         const store = new N3.Store();
         let parsingError = null;
 
+        // --- Detect OWL type by prefix ---
+        let graphType = 'Unknown';
+        if (/^[ \t]*(@prefix|prefix)[ \t]+/im.test(ttlData)) {
+            graphType = 'OWL';
+        }
+
         try {
             parser.parse(ttlData, (error, quad, prefixes) => {
                 if (parsingError) return;
@@ -162,6 +169,9 @@ async function loadAndVisualizeGraph() {
                         option.series[0].categories = [];
                         option.legend.data = [];
                         myChart.setOption(option, true);
+                        // --- Show type in fileInfoDisplay ---
+                        const fileInfoDisplay = document.getElementById('fileInfoDisplay');
+                        if (fileInfoDisplay) fileInfoDisplay.textContent = `Type: ${file.type || 'unknown'} | Size: ${(file.size/1024).toFixed(1)} KB | Graph Type: ${graphType}`;
                         return;
                     }
                     try {
@@ -180,6 +190,9 @@ async function loadAndVisualizeGraph() {
                         option.legend.data = categories.map(c => c.name);
                         myChart.setOption(option, true);
                         console.log("ECharts option set with new data from", file.name);
+                        // --- Show type in fileInfoDisplay ---
+                        const fileInfoDisplay = document.getElementById('fileInfoDisplay');
+                        if (fileInfoDisplay) fileInfoDisplay.textContent = `Type: ${file.type || 'unknown'} | Size: ${(file.size/1024).toFixed(1)} KB | Graph Type: ${graphType}`;
                     } catch (transformError) {
                         myChart.hideLoading();
                         console.error("Error transforming RDF to ECharts data:", transformError);
@@ -276,32 +289,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Graph Controls ---
-    let currentZoom = 1;
-    function setZoom(zoom) {
-        currentZoom = Math.max(0.2, Math.min(zoom, 3));
-        chartDom.style.transform = `scale(${currentZoom})`;
-        chartDom.style.transformOrigin = 'center center';
-    }
     if (zoomInBtn) {
         zoomInBtn.addEventListener('click', () => {
-            setZoom(currentZoom + 0.1);
+            // Increase zoom by a factor (e.g., 1.2)
+            option.series[0].zoom = (option.series[0].zoom || 1) * 1.2;
+            myChart.setOption(option);
+            showNotification(`Zoomed in. Current zoom: ${option.series[0].zoom.toFixed(2)}x`, 'info', 1500);
         });
     }
     if (zoomOutBtn) {
         zoomOutBtn.addEventListener('click', () => {
-            setZoom(currentZoom - 0.1);
+            // Decrease zoom by a factor (e.g., 1/1.2)
+            option.series[0].zoom = (option.series[0].zoom || 1) / 1.2;
+            myChart.setOption(option);
+            showNotification(`Zoomed out. Current zoom: ${option.series[0].zoom.toFixed(2)}x`, 'info', 1500);
         });
     }
     if (resetZoomBtn) {
         resetZoomBtn.addEventListener('click', () => {
-            setZoom(1);
-            if (myChart) myChart.dispatchAction({ type: 'restore' });
+            if (myChart) myChart.dispatchAction({ type: 'restore' }); // Resets zoom and pan
+            showNotification('Zoom and pan reset.', 'info');
         });
     }
     if (fitViewBtn) {
         fitViewBtn.addEventListener('click', () => {
-            setZoom(1);
-            if (myChart) myChart.resize();
+            if (myChart) myChart.dispatchAction({ type: 'restore' }); // Resets zoom and pan
+            myChart.resize(); // Also ensures the chart fits its container
+            showNotification('Graph view fitted and zoom reset.', 'info');
         });
     }
     if (clearGraphBtn) {
