@@ -166,6 +166,9 @@ const PROGRESSIVE_LOADING_CONFIG = {
     maxLinks: 1000         // Maximum number of links to show at once
 };
 
+// Make configuration globally accessible
+window.PROGRESSIVE_LOADING_CONFIG = PROGRESSIVE_LOADING_CONFIG;
+
 // Filter configuration
 const FILTER_CONFIG = {
     searchTerm: '',
@@ -931,14 +934,6 @@ function updateStatsDisplay() {
                 <div class="stats-item">
                     <span class="stats-label">Categories:</span>
                     <span class="stats-value">${numCategories}</span>
-                </div>
-                <div class="stats-item">
-                    <span class="stats-label">Avg. Degree:</span>
-                    <span class="stats-value">${avgDegree}</span>
-                </div>
-                <div class="stats-item">
-                    <span class="stats-label">Density:</span>
-                    <span class="stats-value">${density}</span>
                 </div>
             </div>
         </div>

@@ -146,6 +146,7 @@
             z-index: 1000;
             backdrop-filter: blur(5px);
             border-top: 1px solid rgba(0,0,0,0.1);
+            pointer-events: none;
         }
         .stats-container {
             display: flex;
@@ -291,7 +292,7 @@
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.0/echarts.min.js"></script>
-    <script src="https://unpkg.com/n3/browser/n3.min.js"></script>
+    <script src="https://unpkg.com/n3/browser/n3.min.js" defer></script>
 </head>
 <body>
 
@@ -318,10 +319,10 @@
                 <button id="zoomInBtn" aria-label="Zoom In">➕</button>
                 <button id="zoomOutBtn" aria-label="Zoom Out">➖</button>
             </div>
-            <div id="echartsContainer" style="width:100%; height:100%;"></div>
+            <div id="echartsContainer" style="width:100%; height:100%; position:relative;"></div>
             <div id="movingBg" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0.1; pointer-events:none;"></div>
             <div class="graph-placeholder" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#8a8d91; font-size:1.1em; z-index:0; pointer-events:none;">Load a TTL file to visualize your graph here.</div>
-            <div id="statsDisplay"></div>
+            <div id="statsDisplay" style="position:absolute; bottom:0; left:0; right:0; z-index:1000;"></div>
         </div>
         <div id="notificationArea"></div>
     </div>
@@ -353,6 +354,15 @@
             'ttl_files/R6.ttl', 'ttl_files/R7.ttl', 'ttl_files/R8.ttl', 'ttl_files/R9.ttl', 'ttl_files/R10.ttl',
             'ttl_files/R11.ttl', 'ttl_files/R12.ttl', 'ttl_files/R13.ttl', 'ttl_files/R14.ttl', 'ttl_files/R15.ttl'
         ];
+
+        // Define progressive loading configuration
+        window.PROGRESSIVE_LOADING_CONFIG = {
+            initialNodeLimit: 50,
+            batchSize: 50,
+            maxNodes: 500,
+            maxLinks: 1000
+        };
+
         fileInput.addEventListener('change', function() {
             if (fileInput.files.length > 0) {
                 fileNameDisplay.textContent = fileInput.files[0].name;
@@ -362,6 +372,12 @@
         });
         if (randomGraphBtn) {
             randomGraphBtn.addEventListener('click', async function() {
+                // Check if N3.js is loaded
+                if (typeof N3 === 'undefined') {
+                    showNotification("Error: N3.js library is not loaded. Please refresh the page and try again.", 'error', 6000);
+                    return;
+                }
+
                 // Pick a random file
                 const randomIdx = Math.floor(Math.random() * ttlFiles.length);
                 const randomFilePath = ttlFiles[randomIdx];
@@ -384,38 +400,66 @@
                     if (/^[ \t]*(@prefix|prefix)[ \t]+/im.test(ttlData)) graphType = 'OWL';
                     parser.parse(ttlData, (error, quad, prefixes) => {
                         if (parsingError) return;
-                        if (error) { parsingError = error; console.error('Error during N3 parsing:', error); return; }
-                        if (quad) { store.addQuad(quad); }
-                        else {
-                            if (window.myChart && window.myChart.hideLoading) window.myChart.hideLoading();
+                        if (error) {
+                            parsingError = error;
+                            console.error("Error during N3 parsing:", error);
+                            return;
+                        }
+                        if (quad) {
+                            store.addQuad(quad);
+                        } else {
+                            myChart.hideLoading();
                             if (parsingError) {
-                                if (window.showNotification) window.showNotification(`Error parsing TTL file '${randomFilePath}':\n${parsingError.message}\n\nCheck console for more details.`, 'error', 6000);
-                                return;
+                                showNotification(`Error parsing TTL file '${randomFilePath}':\n${parsingError.message}\n\nCheck console for more details.`, 'error', 6000);
+                                return; 
                             }
+                            console.log(`TTL parsing complete for '${randomFilePath}'. Prefixes:`, prefixes);
+                            console.log("Total quads parsed:", store.size);
                             if (store.size === 0) {
-                                if (window.showNotification) window.showNotification(`The TTL file '${randomFilePath}' is empty or does not contain any valid triples that could be visualized.`, 'warning', 6000);
-                                if (window.option && window.myChart) {
-                                    window.option.series[0].data = [];
-                                    window.option.series[0].links = [];
-                                    window.option.series[0].categories = [];
-                                    window.option.legend.data = [];
-                                    window.myChart.setOption(window.option, true);
-                                }
-                                fileInfoDisplay.textContent = `Type: ttl | Size: unknown | Graph Type: ${graphType}`;
+                                showNotification(`The TTL file '${randomFilePath}' is empty or does not contain any valid triples that could be visualized.`, 'warning', 6000);
+                                option.series[0].data = [];
+                                option.series[0].links = [];
+                                option.series[0].categories = [];
+                                option.legend.data = [];
+                                myChart.setOption(option);
                                 return;
                             }
                             try {
-                                const { nodes, links } = window.transformRdfToEcharts(store, prefixes);
-                                if (window.option && window.myChart) {
-                                    window.option.series[0].data = nodes;
-                                    window.option.series[0].links = links;
-                                    const categories = window.extractCategories(nodes);
-                                    window.option.series[0].categories = categories;
-                                    window.option.legend.data = categories.map(c => c.name);
-                                    window.myChart.setOption(window.option, true);
+                                const { nodes, links } = transformRdfToEcharts(store, prefixes);
+                                console.log(`Transformed data for '${randomFilePath}'. Nodes: ${nodes.length}, Links: ${links.length}`);
+                                let message = `Successfully loaded and visualized '${randomFilePath}'.`;
+                                if (nodes.length === 0 && links.length === 0 && store.size > 0) {
+                                    console.warn("TTL data was parsed, but transformation resulted in an empty graph.");
+                                    message = `Data from '${randomFilePath}' was parsed (${store.size} triples), but it resulted in an empty graph. Check if the data structure is suitable for the visualizer.`;
                                 }
-                                if (window.showNotification) window.showNotification(`Successfully loaded and visualized '${randomFilePath}'.`, 'success', 4000);
-                                fileInfoDisplay.textContent = `Type: ttl | Size: unknown | Graph Type: ${graphType}`;
+                                showNotification(message, 'success', 4000);
+                                
+                                // Store original data for progressive loading
+                                originalGraphData = { nodes, links };
+                                
+                                // Initially load only a subset of nodes
+                                const initialNodes = nodes.slice(0, PROGRESSIVE_LOADING_CONFIG.initialNodeLimit);
+                                const initialLinks = links.filter(link => {
+                                    const sourceInInitial = initialNodes.some(n => n.id === link.source);
+                                    const targetInInitial = initialNodes.some(n => n.id === link.target);
+                                    return sourceInInitial && targetInInitial;
+                                });
+                                
+                                option.series[0].data = initialNodes;
+                                option.series[0].links = initialLinks;
+                                const categories = extractCategories(initialNodes);
+                                option.series[0].categories = categories;
+                                option.legend.data = categories.map(c => c.name);
+                                
+                                myChart.setOption(option, true);
+                                
+                                // Initialize filter controls
+                                initializeFilterControls();
+                                
+                                // Update stats display
+                                updateStatsDisplay();
+                                
+                                showNotification(`Loaded initial ${initialNodes.length} nodes and ${initialLinks.length} links. Use "Load More" to see more.`, 'success');
                             } catch (transformError) {
                                 if (window.myChart && window.myChart.hideLoading) window.myChart.hideLoading();
                                 if (window.showNotification) window.showNotification(`Error processing graph data from '${randomFilePath}':\n${transformError.message}`, 'error', 6000);
