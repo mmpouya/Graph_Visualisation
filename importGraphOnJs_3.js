@@ -277,6 +277,9 @@ function applyFilters() {
     option.series[0].links = filteredLinks;
     myChart.setOption(option);
     
+    // Update node styles after filtering
+    updateNodeStyles();
+    
     // Update stats display
     updateStatsDisplay();
     
@@ -328,6 +331,9 @@ function loadMoreNodes() {
     option.series[0].links = [...currentLinks, ...newLinks];
     myChart.setOption(option);
     
+    // Update node styles after loading more nodes
+    updateNodeStyles();
+    
     // Update stats display
     updateStatsDisplay();
     
@@ -347,7 +353,37 @@ function loadMoreNodes() {
     showNotification(`Loaded ${newNodes.length} more nodes and ${newLinks.length} links.`, 'info');
 }
 
-// Modify the loadAndVisualizeGraph function to store original data and implement progressive loading
+// Add this new function before loadAndVisualizeGraph
+function updateNodeStyles() {
+    if (!option.series[0].data || !option.series[0].links) return;
+    
+    // Create a set of connected node IDs
+    const connectedNodes = new Set();
+    option.series[0].links.forEach(link => {
+        connectedNodes.add(link.source);
+        connectedNodes.add(link.target);
+    });
+    
+    // Update node styles
+    option.series[0].data.forEach(node => {
+        if (!node.itemStyle) {
+            node.itemStyle = {};
+        }
+        
+        // If node has no connections, make it transparent
+        if (!connectedNodes.has(node.id)) {
+            node.itemStyle.opacity = 0.3;
+            console.log(`Making node ${node.id} transparent`);
+        } else {
+            node.itemStyle.opacity = 1.0;
+        }
+    });
+    
+    // Update the chart
+    myChart.setOption(option);
+}
+
+// Modify the loadAndVisualizeGraph function to call updateNodeStyles
 async function loadAndVisualizeGraph() {
     // Hide the graph placeholder when visualizing the graph
     const graphPlaceholder = document.querySelector('.graph-placeholder');
@@ -453,6 +489,9 @@ async function loadAndVisualizeGraph() {
                         option.legend.data = categories.map(c => c.name);
                         
                         myChart.setOption(option, true);
+                        
+                        // Update node styles after setting the initial data
+                        updateNodeStyles();
                         
                         // Initialize filter controls
                         initializeFilterControls();
@@ -603,6 +642,7 @@ document.addEventListener('DOMContentLoaded', () => {
             option.series[0].categories = [];
             option.legend.data = [];
             myChart.setOption(option, true);
+            updateNodeStyles(); // Update styles after clearing
             showNotification('Graph cleared.', 'info');
         });
     }
@@ -638,12 +678,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     console.log("Graph visualizer initialized. Ready to load TTL files.");
+
+    // Add legend selection change handler
+    myChart.on('legendselectchanged', function(params) {
+        // Update node visibility based on legend selection
+        option.series[0].data.forEach(node => {
+            const category = node.category;
+            const isSelected = params.selected[category];
+            if (node.itemStyle) {
+                node.itemStyle.opacity = isSelected ? 1.0 : 0.1;
+            } else {
+                node.itemStyle = { opacity: isSelected ? 1.0 : 0.1 };
+            }
+        });
+        
+        // Update the chart
+        myChart.setOption(option);
+        
+        // Update node styles to maintain consistency with connection-based visibility
+        updateNodeStyles();
+    });
 });
   
   function transformRdfToEcharts(store, prefixes) {
       const nodes = [];
       const links = [];
       const nodeMap = new Map(); // To keep track of nodes and their array indices
+      const connectedNodes = new Set(); // Track which nodes have connections
   
       // Helper to get a potentially prefixed name or full URI
       function getTermName(term) {
@@ -677,7 +738,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const subjectId = getTermName(quad.subject);
           const predicateId = getTermName(quad.predicate);
           if (edgePredicates.has(subjectId) && labelPredicates.some(lp => predicateId.endsWith(lp)) && quad.object.termType === 'Literal') {
-              edgeLabels[subjectId] = quad.object.value;
+              edgeLabels[predicateId] = quad.object.value;
           }
       });
   
@@ -689,6 +750,10 @@ document.addEventListener('DOMContentLoaded', () => {
   
           // Only create nodes for subjects and objects in edge triples
           if (quad.object.termType === 'NamedNode' || quad.object.termType === 'BlankNode') {
+              // Mark both subject and object as connected nodes
+              connectedNodes.add(subjectId);
+              connectedNodes.add(objectId);
+  
               // Add subject node if not already added
               if (!nodeMap.has(subjectId)) {
                   let nodeSymbol = undefined;
@@ -706,8 +771,11 @@ document.addEventListener('DOMContentLoaded', () => {
                       properties: {},
                       fixed: false,
                       expanded: false,
+                      itemStyle: {
+                          opacity: 1.0 // Default opacity for connected nodes
+                      },
                       ...(nodeSymbol ? { symbol: nodeSymbol } : {}),
-                      ...(nodeItemStyle ? { itemStyle: nodeItemStyle } : {}),
+                      ...(nodeItemStyle ? { itemStyle: { ...nodeItemStyle, opacity: 1.0 } } : {}),
                       ...(nodeSymbolSize ? { symbolSize: nodeSymbolSize } : {})
                   });
                   nodeMap.set(subjectId, nodes[nodes.length - 1]);
@@ -729,8 +797,11 @@ document.addEventListener('DOMContentLoaded', () => {
                       properties: {},
                       fixed: false,
                       expanded: false,
+                      itemStyle: {
+                          opacity: 1.0 // Default opacity for connected nodes
+                      },
                       ...(nodeSymbol ? { symbol: nodeSymbol } : {}),
-                      ...(nodeItemStyle ? { itemStyle: nodeItemStyle } : {}),
+                      ...(nodeItemStyle ? { itemStyle: { ...nodeItemStyle, opacity: 1.0 } } : {}),
                       ...(nodeSymbolSize ? { symbolSize: nodeSymbolSize } : {})
                   });
                   nodeMap.set(objectId, nodes[nodes.length - 1]);
@@ -754,6 +825,17 @@ document.addEventListener('DOMContentLoaded', () => {
                       subjectNode.name = objectId;
                   }
               }
+          }
+      });
+      
+      // Make isolated nodes transparent
+      nodes.forEach(node => {
+          if (!connectedNodes.has(node.id)) {
+              if (!node.itemStyle) {
+                  node.itemStyle = {};
+              }
+              node.itemStyle.opacity = 0.3; // Make isolated nodes transparent
+              console.log(`Making node ${node.id} transparent as it has no connections`);
           }
       });
       
@@ -810,7 +892,10 @@ document.addEventListener('DOMContentLoaded', () => {
           if (node.category) categorySet.add(node.category);
           else categorySet.add('Classes');
       });
-      return Array.from(categorySet).map(catName => ({ name: catName, itemStyle: { color: getRandomColor() } }));
+      return Array.from(categorySet).map(catName => ({ 
+          name: catName, 
+          itemStyle: { color: getRandomColor() } 
+      }));
   }
   
   
@@ -853,6 +938,7 @@ document.addEventListener('DOMContentLoaded', () => {
               // The 'option' object has been directly mutated, so passing it to setOption
               // will apply all changes. ECharts will diff and update efficiently.
               myChart.setOption(option); 
+              updateNodeStyles(); // Update styles after node movement
           } else {
               console.warn("mouseup on node: Node not found in option.series[0].data. Event data ID:", params.data.id);
           }
@@ -879,6 +965,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   clickedNode.y = params.data.y;
               }
               myChart.setOption(option);
+              updateNodeStyles(); // Update styles after node movement
           }
         }
       });
