@@ -4,12 +4,19 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+go:Event rdfs:label "رویداد"@fa .
+go:Regulation rdfs:label "مقررات"@fa .
+go:Organization rdfs:label "سازمان"@fa .
+go:Entity rdfs:label "موجودیت"@fa .
+
 ex:OilIndustryGuard go:HasDuty ex:DutyPerformanceAccordingToRegulations .
 ex:DutyPerformanceAccordingToRegulations rdf:type go:Event .
+ex:DutyPerformanceAccordingToRegulations rdfs:label "اجرای وظایف طبق مقررات"@fa .
 ex:DutyPerformanceAccordingToRegulations go:HasTheme ex:RegulationByNIOC .
 ex:RegulationByNIOC rdf:type go:Regulation .
+ex:RegulationByNIOC rdfs:label "مقررات شرکت ملی نفت ایران"@fa .
 ex:RegulationByNIOC go:CreatedBy ex:NIOC .
 ex:NIOC rdf:type go:Organization .
-ex:NIOC rdfs:label "شرکت ملی نفت ایران" .
+ex:NIOC rdfs:label "شرکت ملی نفت ایران"@fa .
 ex:OilIndustryGuard rdf:type go:Entity .
-ex:OilIndustryGuard rdfs:label "افراد گارد صنعت نفت" .
+ex:OilIndustryGuard rdfs:label "افراد گارد صنعت نفت"@fa .

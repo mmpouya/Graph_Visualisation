@@ -10,6 +10,6 @@ ex:DutyPerformanceAccordingToRegulations go:HasTheme ex:RegulationByNIOC .
 ex:RegulationByNIOC rdf:type go:Regulation .
 ex:RegulationByNIOC go:CreatedBy ex:NIOC .
 ex:NIOC rdf:type go:Organization .
-ex:NIOC rdfs:label "شرکت ملی نفت ایران" .
+ex:NIOC rdfs:label "شرکت ملی نفت ایران"@fa .
 ex:OilIndustryGuard rdf:type go:Entity .
-ex:OilIndustryGuard rdfs:label "افراد گارد صنعت نفت" .
+ex:OilIndustryGuard rdfs:label "افراد گارد صنعت نفت"@fa .

@@ -6,14 +6,23 @@
 
 ex:NIOC go:HasObligation ex:GuardInsuranceObligation .
 ex:GuardInsuranceObligation rdf:type go:LegalObligation .
+ex:GuardInsuranceObligation rdfs:label "الزام بیمه گارد"@fa .
 ex:GuardInsuranceObligation go:HasAgent ex:NIOC .
 ex:GuardInsuranceObligation go:HasTheme ex:OilIndustryGuardInsurance .
 ex:OilIndustryGuardInsurance rdf:type go:Insurance .
+ex:OilIndustryGuardInsurance rdfs:label "بیمه گارد صنعت نفت"@fa .
 ex:OilIndustryGuardInsurance go:ProtectsAgainst ex:DutyRelatedIncidents .
 ex:OilIndustryGuardInsurance go:Insures ex:OilIndustryGuard .
 ex:OilIndustryGuard rdf:type go:Entity .
-ex:OilIndustryGuard rdfs:label "افراد گارد صنعت نفت" .
+ex:OilIndustryGuard rdfs:label "افراد گارد صنعت نفت"@fa .
 ex:NIOC rdf:type go:Organization .
-ex:NIOC rdfs:label "شرکت ملی نفت ایران" .
+ex:NIOC rdfs:label "شرکت ملی نفت ایران"@fa .
 ex:DutyRelatedIncidents rdf:type go:Incident .
-ex:DutyRelatedIncidents rdfs:label "حوادث ناشی از انجام وظیفه" .
+ex:DutyRelatedIncidents rdfs:label "حوادث ناشی از انجام وظیفه"@fa .
+
+# Adding labels for classes
+go:LegalObligation rdfs:label "تعهد قانونی"@fa .
+go:Insurance rdfs:label "بیمه"@fa .
+go:Entity rdfs:label "موجودیت"@fa .
+go:Organization rdfs:label "سازمان"@fa .
+go:Incident rdfs:label "حادثه"@fa .

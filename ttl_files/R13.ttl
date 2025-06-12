@@ -4,10 +4,15 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+go:Insurance rdfs:label "بیمه"@fa .
+go:Entity rdfs:label "موجودیت"@fa .
+go:Organization rdfs:label "سازمان"@fa .
+
 ex:OilIndustryGuardInsurance go:MustBeHandledBy ex:IranInsuranceCompany .
 ex:OilIndustryGuardInsurance rdf:type go:Insurance .
+ex:OilIndustryGuardInsurance rdfs:label "بیمه گارد صنعت نفت"@fa .
 ex:OilIndustryGuardInsurance go:Insures ex:OilIndustryGuard .
 ex:OilIndustryGuard rdf:type go:Entity .
-ex:OilIndustryGuard rdfs:label "افراد گارد صنعت نفت" .
+ex:OilIndustryGuard rdfs:label "افراد گارد صنعت نفت"@fa .
 ex:IranInsuranceCompany rdf:type go:Organization .
-ex:IranInsuranceCompany rdfs:label "شرکت سهامی بیمه ایران" .
+ex:IranInsuranceCompany rdfs:label "شرکت سهامی بیمه ایران"@fa .

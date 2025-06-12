@@ -4,12 +4,22 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+go:Regulation rdfs:label "مقررات"@fa .
+go:Activity rdfs:label "فعالیت"@fa .
+go:Entity rdfs:label "نهاد"@fa .
+go:Organization rdfs:label "سازمان"@fa .
+
 ex:OilIndustryGuardRegulation go:HasPurpose ex:EmploymentTrainingAndDuty .
 ex:OilIndustryGuardRegulation rdf:type go:Regulation .
 ex:OilIndustryGuardRegulation go:RequiresApproval ex:CabinetOfMinisters .
+ex:OilIndustryGuardRegulation rdfs:label "آیین‌نامه گارد صنعت نفت"@fa .
+
 ex:EmploymentTrainingAndDuty rdf:type go:Activity .
 ex:EmploymentTrainingAndDuty go:AssociatedWith ex:OilIndustryGuard .
+ex:EmploymentTrainingAndDuty rdfs:label "آموزش و انجام وظیفه"@fa .
+
 ex:OilIndustryGuard rdf:type go:Entity .
-ex:OilIndustryGuard rdfs:label "افراد گارد صنعت نفت" .
+ex:OilIndustryGuard rdfs:label "افراد گارد صنعت نفت"@fa .
+
 ex:CabinetOfMinisters rdf:type go:Organization .
-ex:CabinetOfMinisters rdfs:label "هیئت وزیران" .
+ex:CabinetOfMinisters rdfs:label "هیئت وزیران"@fa .

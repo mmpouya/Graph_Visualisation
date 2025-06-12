@@ -4,11 +4,14 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+go:Regulation rdfs:label "مقررات"@fa .
+go:Entity rdfs:label "موجودیت"@fa .
 
 ex:OilIndustryGuard go:SubjectTo ex:CriminalRules .
 ex:CriminalRules rdf:type go:Regulation .
+ex:CriminalRules rdfs:label "قوانین کیفری"@fa .
 ex:CriminalRules go:BasedOn ex:MilitaryLawsAndRegulations .
 ex:MilitaryLawsAndRegulations rdf:type go:Regulation .
-ex:MilitaryLawsAndRegulations rdfs:label "قوانین و آیین‌نامه‌های نیروهای مسلح شاهنشاهی" .
+ex:MilitaryLawsAndRegulations rdfs:label "قوانین و آیین‌نامه‌های نیروهای مسلح شاهنشاهی"@fa .
 ex:OilIndustryGuard rdf:type go:Entity .
-ex:OilIndustryGuard rdfs:label "افراد گارد صنعت نفت" .
+ex:OilIndustryGuard rdfs:label "افراد گارد صنعت نفت"@fa .
